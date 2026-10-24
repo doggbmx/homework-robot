@@ -160,6 +160,30 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
 .status-line.err { color: var(--err); }
 .status-line.ok { color: var(--ok); }
 
+.head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btn.estop { background: var(--err); border-color: var(--err); color: #fff; font-weight: 700; letter-spacing: 0.03em; }
+.btn.estop:hover:not(:disabled) { filter: brightness(1.1); }
+.btn.estop:active:not(:disabled) { transform: scale(0.97); }
+.btn.estop.hit { box-shadow: 0 0 0 4px color-mix(in srgb, var(--err) 35%, transparent); }
+
+.jogbar { gap: 16px; }
+.jogpad { display: grid; grid-template-columns: repeat(3, 32px); grid-template-rows: repeat(3, 32px); gap: 3px; }
+.jog { padding: 0; justify-content: center; font-size: 0.78rem; user-select: none; }
+.jog-home { color: var(--accent); font-weight: 700; }
+.jogz { display: grid; grid-template-rows: repeat(2, 32px); gap: 3px; }
+.jogz .jog { font-family: var(--font-mono); }
+.jogopts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.jogopts input[type="range"] { width: 110px; }
+.jogval { font-family: var(--font-mono); font-size: 0.76rem; color: var(--muted); min-width: 3.2em; }
+.joghint { font-size: 0.72rem; color: var(--muted); }
+
+#pane-gcode { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+#gcodeLog { flex: 1; overflow: auto; padding: 8px 12px; }
+.gcode-form { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding: 6px 12px; }
+.gcode-form .prompt { font-family: var(--font-mono); color: var(--accent); font-weight: 600; }
+.gcode-form input { flex: 1; min-width: 0; background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-family: var(--font-mono); font-size: 0.82rem; }
+.log .cmd { color: var(--accent); font-weight: 600; }
+
 @media (max-width: 980px) {
   .bench { grid-template-columns: minmax(0, 1fr); }
   .CodeMirror { height: 360px; }
@@ -173,6 +197,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
   .readout { font-size: 0.72rem; padding: 4px 7px; }
   .tag { font-size: 0.64rem; padding: 2px 6px; }
   #tagReach { display: none; }
+  .joghint { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
@@ -183,7 +208,10 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
       <h1>Simulador Huenit</h1>
       <p>Escribe Python para el brazo robótico y míralo moverse en 3D, sin conectar el robot.</p>
     </div>
-    <span class="chip" id="modeChip"><span class="dot"></span><span id="modeText">Simulación</span></span>
+    <div class="head-actions">
+      <button class="btn estop" id="estopBtn" type="button" title="Aborta el movimiento del brazo (M410) y detiene el programa en marcha"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M10.7 1.5H5.3L1.5 5.3v5.4l3.8 3.8h5.4l3.8-3.8V5.3z"/><rect x="7" y="4" width="2" height="5.4" rx="1" fill="#fff"/><rect x="7" y="10.6" width="2" height="2" rx="1" fill="#fff"/></svg>Parada de emergencia</button>
+      <span class="chip" id="modeChip"><span class="dot"></span><span id="modeText">Simulación</span></span>
+    </div>
   </header>
 
   <div class="bench">
@@ -237,6 +265,33 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
           </div>
           <div class="stage-help">Arrastra para girar · rueda para acercar</div>
         </div>
+        <div class="bar sep jogbar">
+          <span class="lbl" id="jogLabel">Mover</span>
+          <div class="jogpad" role="group" aria-labelledby="jogLabel">
+            <span></span><button class="btn jog" data-jog="0,1" type="button" title="Y+ (flecha arriba)" aria-label="Mover en Y positiva">▲</button><span></span>
+            <button class="btn jog" data-jog="-1,0" type="button" title="X− (flecha izquierda)" aria-label="Mover en X negativa">◀</button>
+            <button class="btn jog jog-home" data-jog="home" type="button" title="Ir a casa (tecla Inicio)" aria-label="Ir a la posición de casa">⌂</button>
+            <button class="btn jog" data-jog="1,0" type="button" title="X+ (flecha derecha)" aria-label="Mover en X positiva">▶</button>
+            <span></span><button class="btn jog" data-jog="0,-1" type="button" title="Y− (flecha abajo)" aria-label="Mover en Y negativa">▼</button><span></span>
+          </div>
+          <div class="jogz" role="group" aria-label="Mover en Z">
+            <button class="btn jog" data-jog="0,0,1" type="button" title="Subir Z (Av Pág)" aria-label="Subir en Z">Z+</button>
+            <button class="btn jog" data-jog="0,0,-1" type="button" title="Bajar Z (Re Pág)" aria-label="Bajar en Z">Z−</button>
+          </div>
+          <div class="jogopts">
+            <label class="lbl" for="jogStep">Paso</label>
+            <select id="jogStep">
+              <option value="1">1 mm</option>
+              <option value="5" selected>5 mm</option>
+              <option value="10">10 mm</option>
+              <option value="25">25 mm</option>
+            </select>
+            <label class="lbl" for="jogSpeed">Velocidad</label>
+            <input type="range" id="jogSpeed" min="10" max="100" step="5" value="100">
+            <span class="jogval" id="jogSpeedVal">100%</span>
+          </div>
+          <span class="joghint">Flechas = X/Y · Re Pág/Av Pág = Z · Inicio = casa</span>
+        </div>
         <div class="tabs" role="tablist">
           <button class="tab" role="tab" aria-selected="true" data-tab="console" id="tab-console">Consola</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="gcode" id="tab-gcode">Comandos al robot<span class="count" id="gcodeCount">0</span></button>
@@ -244,7 +299,14 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
           <button class="tab" role="tab" aria-selected="false" data-tab="ref" id="tab-ref">Funciones</button>
         </div>
         <div class="pane" id="pane-console" role="tabpanel"><pre class="log" id="log"><span class="info">Pulsa Ejecutar para correr el programa. Lo que imprimas con print() aparece aquí.</span></pre></div>
-        <div class="pane" id="pane-gcode" role="tabpanel" hidden><pre class="log" id="gcodeLog"><span class="info">Aquí verás, línea por línea, los comandos G-code que la librería robot.py enviaría por USB al brazo real.</span></pre></div>
+        <div class="pane" id="pane-gcode" role="tabpanel" hidden>
+          <pre class="log" id="gcodeLog"><span class="info">Aquí verás, línea por línea, los comandos G-code que la librería robot.py enviaría por USB al brazo real.</span>
+<span class="info">Escribe un comando y pulsa Enter para probarlo en la simulación y, si está conectado, en el robot. Escribe «help» para ver la lista.</span></pre>
+          <form class="gcode-form" id="gcodeForm">
+            <span class="prompt" aria-hidden="true">&gt;</span>
+            <input id="gcodeInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder='Comando G-code, p. ej. G0 X0 Y200 Z50 · «help» muestra la lista' aria-label="Comando G-code para el robot">
+          </form>
+        </div>
         <div class="pane" id="pane-scene" role="tabpanel" hidden>
           <p>Posición de cada objeto en coordenadas del robot (mm). La columna "tocar arriba" es la Z que debe tener la herramienta actual para tocar la cara superior del cubo.</p>
           <div class="scene-list" id="sceneList"></div>
@@ -358,7 +420,7 @@ const PADS = [
 ];
 const S = {
   pos: { ...HOME }, theta: 0, tool: "suction", pump: 0, valve: 0, grip: 0, held: null, holdOff: null,
-  free: false, rot: 0, cubes: [], running: false, speed: 1, gcodeN: 0
+  free: false, rot: 0, cubes: [], running: false, speed: 1, gcodeN: 0, jogStep: 5, jogSpeed: 100
 };
 
 /* ===================== Escena 3D ===================== */
@@ -654,7 +716,7 @@ function pathPoint(a, b, k, mode) {
   return { x: r * Math.sin(t), y: r * Math.cos(t), z: a.z + (b.z - a.z) * k };
 }
 function fmt(v) { return Number.isInteger(v) ? String(v) : String(+v.toFixed(3)); }
-function moveTo(target, mode) {
+function moveTo(target, mode, mul) {
   const a = { ...S.pos }, b = target;
   if (!checkXYZ(b.x, b.y, b.z)) {
     showGhost(b);
@@ -666,7 +728,7 @@ function moveTo(target, mode) {
     if (!checkXYZ(p.x, p.y, p.z)) { showGhost(p); throw new Error("No reachable: el camino hasta (" + fmt(b.x) + ", " + fmt(b.y) + ", " + fmt(b.z) + ") pasa por (" + p.x.toFixed(0) + ", " + p.y.toFixed(0) + ", " + p.z.toFixed(0) + "), fuera del alcance del brazo. Agrega un punto intermedio" + (mode === "linear" ? " o usa moveG0 (arco)." : ".")); }
     len += Math.hypot(p.x - prev.x, p.y - prev.y, p.z - prev.z); prev = p;
   }
-  const dur = Math.max(220, (len / (150 * S.speed)) * 1000);
+  const dur = Math.max(220, (len / (150 * S.speed * (mul || 1))) * 1000);
   if (!renderer) { S.pos = { ...b }; pose(); return wait(dur); }
   return new Promise((res, rej) => {
     let t0 = null;
@@ -741,12 +803,12 @@ const Serial = {
     });
   },
   // Igual que sendCommand() de robot.py: envía y lee hasta "ok"
-  async send(cmd) {
+  async send(cmd, ignoreStop) {
     this.lines = [];
     await this.writer.write(new TextEncoder().encode(cmd + "\n"));
     let info = "";
     for (;;) {
-      if (stopFlag) throw STOP;
+      if (stopFlag && !ignoreStop) throw STOP;
       const line = await this.nextLine(60000);
       if (line === null) throw new Error("El robot no respondió a " + cmd + ". Revisa el cable y que el robot esté encendido.");
       if (line.indexOf("ok") > -1) return info;
@@ -980,7 +1042,106 @@ function gcode(cmd, ln) {
   const s = document.createElement("span");
   const n = document.createElement("span"); n.className = "ln"; n.textContent = ln ? "L" + ln : ""; s.appendChild(n);
   s.appendChild(document.createTextNode(cmd + "\n"));
-  gEl.appendChild(s); gEl.parentElement.scrollTop = gEl.parentElement.scrollHeight;
+  gEl.appendChild(s); gEl.scrollTop = gEl.scrollHeight;
+}
+
+/* ===================== Movimiento manual, parada de emergencia y consola G-code ===================== */
+function eStop() {
+  stop(); // cancela el programa en curso y su animación
+  const btn = document.getElementById("estopBtn");
+  btn.classList.add("hit"); setTimeout(() => btn.classList.remove("hit"), 450);
+  if (Serial.connected) {
+    gcode("M410", null);
+    Serial.send("M410", true).then(
+      () => info("  ↳ M410 enviado al robot: movimiento abortado."),
+      (e) => err("No se pudo enviar M410 al robot: " + ((e && e.message) || e))
+    );
+  }
+  warn("■ Parada de emergencia" + (Serial.connected ? " (M410)" : "") + (S.running ? "" : ": no había nada en marcha."));
+}
+
+let jogBusy = false;
+async function jog(dx, dy, dz) {
+  if (S.running || jogBusy) return;
+  jogBusy = true;
+  try {
+    const t = { x: S.pos.x + dx, y: S.pos.y + dy, z: S.pos.z + dz };
+    const words = [];
+    if (dx) words.push("X" + fmt(dx));
+    if (dy) words.push("Y" + fmt(dy));
+    if (dz) words.push("Z" + fmt(dz));
+    // moveTo valida antes de enviar: si el punto no se alcanza, lanza y nada llega al robot
+    const sim = moveTo(t, "linear", S.jogSpeed / 100);
+    await Promise.all([sim, sendSeq(["G91", "G1 " + words.join(" "), "G90"], null)]);
+  } catch (e) {
+    if (e && e !== STOP && e.message) warn("  ↳ " + e.message);
+  } finally {
+    jogBusy = false;
+  }
+}
+async function goHomeUI() {
+  if (S.running || jogBusy) return;
+  jogBusy = true;
+  try { await API.goHome([], null); } catch (e) { /* el mensaje de error ya lo muestra moveTo */ }
+  finally { jogBusy = false; }
+}
+
+const GCMD_HIST = [];
+let ghistIdx = 0;
+function echoG(text, cls) {
+  const s = document.createElement("span");
+  if (cls) s.className = cls;
+  s.textContent = text + "\n";
+  gEl.appendChild(s);
+  gEl.scrollTop = gEl.scrollHeight;
+}
+function gcodeHelp() {
+  echoG("Consola G-code: prueba comandos como los que envía robot.py.", "cmd");
+  echoG("  G0 X0 Y200 Z50   mover (modo arco); con G1 lo hace en línea recta", "info");
+  echoG("  M1400 A1023      bomba al máximo · M1400 A0 la apaga", "info");
+  echoG("  M1401 A1 / A0    válvula abierta / cerrada", "info");
+  echoG("  M9996 A1B90C60   girar la ventosa 90° a velocidad 60", "info");
+  echoG("  M1008 A3         pedir la posición actual", "info");
+  echoG("Con el robot conectado, cualquier otro comando se le envía tal cual.", "info");
+  echoG("También: help (esta ayuda) · clear (limpiar) · flechas ↑ ↓ (historial)", "info");
+}
+async function execGcodeCmd(raw) {
+  const cmd = raw.trim();
+  if (!cmd) return;
+  echoG("> " + cmd, "cmd");
+  const low = cmd.toLowerCase();
+  if (low === "help" || low === "h" || low === "?") { gcodeHelp(); return; }
+  if (low === "clear" || low === "cls") { gEl.innerHTML = ""; return; }
+  try {
+    const m = cmd.match(/^G([01])\b(.*)$/i);
+    if (m) {
+      const get = (k) => { const r = m[2].match(new RegExp(k + "\\s*(-?[\\d.]+)", "i")); return r ? parseFloat(r[1]) : null; };
+      const p = { x: get("X") ?? S.pos.x, y: get("Y") ?? S.pos.y, z: get("Z") ?? S.pos.z };
+      const sim = moveTo(p, m[1] === "1" ? "linear" : "arc");
+      const inf = Serial.connected ? (await Promise.all([sim, Serial.send(cmd)]))[1] : await sim;
+      if (inf) echoG("← " + inf, "info");
+      return;
+    }
+    if (/^M140[01]\s*A/i.test(cmd)) {
+      if (Serial.connected) await Serial.send(cmd);
+      airState(cmd);
+      if (S.tool === "suction") {
+        if (suctionActive()) { await wait(250 / S.speed); tryAttach(); }
+        else if (S.held) await release();
+      }
+      updateTags();
+      return;
+    }
+    if (Serial.connected) {
+      const inf = await Serial.send(cmd);
+      echoG(inf ? "← " + inf : "ok", "info");
+    } else {
+      echoG("ℹ La simulación no interpreta " + cmd.split(" ")[0].toUpperCase() + "; con el robot conectado se enviaría por USB.", "warn");
+    }
+  } catch (e) {
+    if (e === STOP) echoG("■ abortado", "warn");
+    else echoG("✗ " + ((e && e.message) || e), "err");
+  }
 }
 
 /* ===================== Interfaz ===================== */
@@ -1140,6 +1301,59 @@ document.getElementById("speedSel").addEventListener("change", (e) => { S.speed 
 document.getElementById("runBtn").addEventListener("click", run);
 document.getElementById("stopBtn").addEventListener("click", stop);
 document.getElementById("resetBtn").addEventListener("click", () => { if (!S.running) { resetScene(); clearMarks(); } });
+document.getElementById("estopBtn").addEventListener("click", eStop);
+document.querySelectorAll("[data-jog]").forEach((b) => b.addEventListener("click", () => {
+  const d = b.dataset.jog;
+  if (d === "home") { goHomeUI(); return; }
+  const v = d.split(",").map(Number), st = S.jogStep;
+  jog(v[0] * st, v[1] * st, (v[2] || 0) * st);
+}));
+document.getElementById("jogStep").addEventListener("change", (e) => { S.jogStep = parseFloat(e.target.value); });
+const jogSpeedEl = document.getElementById("jogSpeed");
+jogSpeedEl.addEventListener("input", () => {
+  S.jogSpeed = parseInt(jogSpeedEl.value, 10);
+  document.getElementById("jogSpeedVal").textContent = S.jogSpeed + "%";
+});
+jogSpeedEl.addEventListener("change", async () => {
+  if (!Serial.connected) return;
+  try { await Serial.send("M220 S" + S.jogSpeed); info("  ↳ Velocidad al " + S.jogSpeed + "% (M220) también en el robot."); }
+  catch (e) { warn("  ↳ El robot no acepta M220: la velocidad solo se aplicará en la simulación."); }
+});
+const gcodeInput = document.getElementById("gcodeInput");
+document.getElementById("gcodeForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const v = gcodeInput.value;
+  if (!v.trim()) return;
+  GCMD_HIST.push(v); ghistIdx = GCMD_HIST.length;
+  gcodeInput.value = "";
+  await execGcodeCmd(v);
+  gcodeInput.focus();
+});
+gcodeInput.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp" && ghistIdx > 0) { e.preventDefault(); ghistIdx--; gcodeInput.value = GCMD_HIST[ghistIdx]; }
+  else if (e.key === "ArrowDown") {
+    e.preventDefault();
+    if (ghistIdx < GCMD_HIST.length - 1) { ghistIdx++; gcodeInput.value = GCMD_HIST[ghistIdx]; }
+    else { ghistIdx = GCMD_HIST.length; gcodeInput.value = ""; }
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const a = document.activeElement;
+  if ((cm.hasFocus && cm.hasFocus()) || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+  if (e.key === "Home") { e.preventDefault(); goHomeUI(); return; }
+  const st = S.jogStep;
+  let d = null;
+  if (e.key === "ArrowLeft") d = [-st, 0, 0];
+  else if (e.key === "ArrowRight") d = [st, 0, 0];
+  else if (e.key === "ArrowUp") d = [0, st, 0];
+  else if (e.key === "ArrowDown") d = [0, -st, 0];
+  else if (e.key === "PageUp") d = [0, 0, st];
+  else if (e.key === "PageDown") d = [0, 0, -st];
+  else return;
+  e.preventDefault();
+  jog(d[0], d[1], d[2]);
+});
 
 function setRunning(r) {
   document.getElementById("runBtn").disabled = r;
@@ -1147,6 +1361,10 @@ function setRunning(r) {
   document.getElementById("resetBtn").disabled = r;
   document.getElementById("toolSel").disabled = r;
   document.getElementById("serialBtn").disabled = r;
+  document.querySelectorAll("[data-jog]").forEach((b) => { b.disabled = r; });
+  document.getElementById("jogStep").disabled = r;
+  document.getElementById("jogSpeed").disabled = r;
+  document.getElementById("gcodeInput").disabled = r;
 }
 let runMark = null, errMark = null;
 function markRun(ln) { if (!ln || !cm.addLineClass) return; clearRun(); runMark = cm.addLineClass(ln - 1, "background", "run-line"); cm.scrollIntoView({ line: ln - 1, ch: 0 }, 60); }

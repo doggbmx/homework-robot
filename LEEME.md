@@ -21,6 +21,24 @@ simulador sin el robot y después lo ejecutan igual en el brazo real.
    (o Ctrl+Enter).
 3. El código se guarda solo en el navegador de cada alumno.
 
+## Controles manuales del brazo
+
+Además de ejecutar programas de Python, la página permite manejar el brazo a mano:
+
+- **Parada de emergencia** (botón rojo, arriba a la derecha): aborta el
+  movimiento del brazo (comando `M410`, el mismo que usa el programa Huenit)
+  y detiene el programa en marcha.
+- **Mover** (panel bajo la escena 3D): cruceta para X/Y, botones Z+/Z− y
+  botón de casa. También con el teclado: las flechas mueven en X/Y,
+  Re Pág/Av Pág en Z e Inicio vuelve a casa. El selector **Paso** fija los
+  milímetros de cada movimiento (1, 5, 10 o 25 mm) y el deslizador
+  **Velocidad** lo hace más lento (en el robot conectado se intenta enviar
+  como `M220`, si el firmware lo acepta).
+- **Consola G-code** (pestaña «Comandos al robot»): escribe un comando y pulsa
+  Enter para probarlo en la simulación y, si está conectado, en el brazo.
+  Entiende `help` (lista de comandos) y `clear` (limpiar), y guarda el
+  historial con las flechas ↑ ↓.
+
 ## Pasar al robot real
 
 **Opción A (recomendada): programa Huenit**
