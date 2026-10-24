@@ -38,6 +38,15 @@ Además de ejecutar programas de Python, la página permite manejar el brazo a m
   Enter para probarlo en la simulación y, si está conectado, en el brazo.
   Entiende `help` (lista de comandos) y `clear` (limpiar), y guarda el
   historial con las flechas ↑ ↓.
+- **Teach & Play** (pestaña «Teach & Play»): enseña al brazo una secuencia
+  paso a paso. Mueve el brazo con el panel «Mover» (o con un programa), pulsa
+  **Añadir paso** para guardar la posición y ajusta en cada paso el modo de
+  movimiento (arco/lineal/sin mover), la acción de la herramienta (ventosa o
+  pinza) y una pausa T en segundos — el mismo modelo de macro del programa
+  Huenit. **Reproducir** ejecuta la macro en la simulación y en el robot
+  conectado a la vez (se puede parar con Detener o la parada de emergencia), y
+  **Copiar G-code** exporta la macro como comandos listos para la consola del
+  programa Huenit. La macro se guarda sola en el navegador.
 
 ## Pasar al robot real
 

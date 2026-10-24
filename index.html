@@ -184,6 +184,19 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
 .gcode-form input { flex: 1; min-width: 0; background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-family: var(--font-mono); font-size: 0.82rem; }
 .log .cmd { color: var(--accent); font-weight: 600; }
 
+#pane-teach { display: flex; flex-direction: column; padding: 0; overflow: hidden; height: 300px; }
+.teachbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.teachbar .btn svg { width: 13px; height: 13px; }
+.teachhint { margin: 0; padding: 6px 12px; font-size: 0.78rem; color: var(--muted); border-bottom: 1px solid var(--line); }
+.teachlist { flex: 1; overflow: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+.mstep { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; background: var(--sunk); font-size: 0.8rem; }
+.mstep.playing { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.mnum { font-family: var(--font-mono); color: var(--muted); min-width: 1.6em; }
+.mpos { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mstep select { padding: 3px 6px; font-size: 0.78rem; }
+.mstep input[type="number"] { width: 4.2em; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font-family: var(--font-mono); font-size: 0.78rem; }
+.mstep .btn { padding: 3px 8px; font-size: 0.75rem; }
+
 @media (max-width: 980px) {
   .bench { grid-template-columns: minmax(0, 1fr); }
   .CodeMirror { height: 360px; }
@@ -296,6 +309,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
           <button class="tab" role="tab" aria-selected="true" data-tab="console" id="tab-console">Consola</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="gcode" id="tab-gcode">Comandos al robot<span class="count" id="gcodeCount">0</span></button>
           <button class="tab" role="tab" aria-selected="false" data-tab="scene" id="tab-scene">Escena</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="teach" id="tab-teach">Teach &amp; Play<span class="count" id="teachCount">0</span></button>
           <button class="tab" role="tab" aria-selected="false" data-tab="ref" id="tab-ref">Funciones</button>
         </div>
         <div class="pane" id="pane-console" role="tabpanel"><pre class="log" id="log"><span class="info">Pulsa Ejecutar para correr el programa. Lo que imprimas con print() aparece aquí.</span></pre></div>
@@ -310,6 +324,17 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
         <div class="pane" id="pane-scene" role="tabpanel" hidden>
           <p>Posición de cada objeto en coordenadas del robot (mm). La columna "tocar arriba" es la Z que debe tener la herramienta actual para tocar la cara superior del cubo.</p>
           <div class="scene-list" id="sceneList"></div>
+        </div>
+        <div class="pane" id="pane-teach" role="tabpanel" hidden>
+          <div class="teachbar">
+            <button class="btn primary" id="teachAdd" type="button">+ Añadir paso</button>
+            <button class="btn" id="teachPlay" type="button"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Reproducir</button>
+            <button class="btn stop" id="teachClear" type="button">Vaciar</button>
+            <button class="btn" id="teachCopy" type="button">Copiar G-code</button>
+            <span class="status-line" id="teachStatus"></span>
+          </div>
+          <p class="teachhint">Enseña al brazo una secuencia: muévelo con el panel <b>Mover</b> (o con un programa) y pulsa <b>Añadir paso</b> para guardar cada posición. Ajusta en cada paso el modo de movimiento, la acción de la herramienta y la pausa T en segundos.</p>
+          <div class="teachlist" id="teachList"></div>
         </div>
         <div class="pane" id="pane-ref" role="tabpanel" hidden>
           <p>Son las mismas funciones de la librería <code>robot</code> que trae el programa Huenit, así que el código funciona igual en el robot real. Empieza siempre con <code>import robot</code>.</p>
@@ -1144,6 +1169,121 @@ async function execGcodeCmd(raw) {
   }
 }
 
+/* ===================== Teach & Play (macros) ===================== */
+const MODES = { arc: "Arco", linear: "Lineal", none: "Sin mover" };
+const EFFECTS = {
+  none: "Sin acción",
+  suctionOn: "Ventosa: aspirar",
+  suctionOff: "Ventosa: soltar",
+  gripOpen: "Pinza: abrir",
+  gripClose: "Pinza: agarrar",
+  gripIdle: "Pinza: reposo"
+};
+const macro = { steps: [], busy: false, playIdx: null };
+function loadMacro() {
+  try {
+    const arr = JSON.parse(store("huenit-sim-macro") || "null");
+    if (!Array.isArray(arr)) return;
+    macro.steps = arr
+      .filter((s) => s && [s.x, s.y, s.z].every((v) => typeof v === "number" && isFinite(v)))
+      .map((s) => ({
+        x: s.x, y: s.y, z: s.z,
+        mode: MODES[s.mode] ? s.mode : "arc",
+        effect: EFFECTS[s.effect] ? s.effect : "none",
+        t: Math.max(0, +s.t || 0)
+      }));
+  } catch (e) { /* macro guardada corrupta: se ignora */ }
+}
+function saveMacro() { store("huenit-sim-macro", JSON.stringify(macro.steps)); }
+function addStep() {
+  if (S.running || macro.busy) return;
+  macro.steps.push({
+    x: Math.round(S.pos.x * 10) / 10, y: Math.round(S.pos.y * 10) / 10, z: Math.round(S.pos.z * 10) / 10,
+    mode: "arc", effect: "none", t: 0
+  });
+  saveMacro(); renderMacro();
+}
+function stepOp(i, act) {
+  const s = macro.steps;
+  if (act === "del") s.splice(i, 1);
+  else if (act === "up" && i > 0) { const a = s[i - 1]; s[i - 1] = s[i]; s[i] = a; }
+  else if (act === "down" && i >= 0 && i < s.length - 1) { const a = s[i + 1]; s[i + 1] = s[i]; s[i] = a; }
+  else return;
+  saveMacro(); renderMacro();
+}
+function optHtml(map, cur) { return Object.keys(map).map((v) => '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + map[v] + "</option>").join(""); }
+function renderMacro() {
+  const el = document.getElementById("teachList");
+  const n = macro.steps.length;
+  const badge = document.getElementById("teachCount"); if (badge) badge.textContent = n;
+  if (!n) { el.innerHTML = '<p class="empty">Sin pasos todavía. Mueve el brazo con el panel «Mover» y pulsa «Añadir paso» para guardar cada posición.</p>'; return; }
+  el.innerHTML = macro.steps.map((st, i) =>
+    '<div class="mstep' + (i === macro.playIdx ? " playing" : "") + '" data-i="' + i + '">' +
+    '<span class="mnum">' + (i + 1) + '</span>' +
+    '<span class="mpos">X' + fmt(st.x) + " · Y" + fmt(st.y) + " · Z" + fmt(st.z) + "</span>" +
+    '<select class="mmode" aria-label="Modo del movimiento">' + optHtml(MODES, st.mode) + "</select>" +
+    '<select class="meffect" aria-label="Acción de la herramienta">' + optHtml(EFFECTS, st.effect) + "</select>" +
+    '<label class="lbl">T</label><input class="mt" type="number" min="0" step="0.5" value="' + st.t + '" aria-label="Pausa en segundos"><span class="lbl">s</span>' +
+    '<span class="grow"></span>' +
+    '<button class="btn" data-act="up" type="button" title="Subir paso" aria-label="Subir paso"' + (i === 0 ? " disabled" : "") + ">↑</button>" +
+    '<button class="btn" data-act="down" type="button" title="Bajar paso" aria-label="Bajar paso"' + (i === n - 1 ? " disabled" : "") + ">↓</button>" +
+    '<button class="btn" data-act="del" type="button" title="Quitar paso" aria-label="Quitar paso">✕</button>' +
+    "</div>"
+  ).join("");
+}
+function markStep(i) {
+  document.querySelectorAll("#teachList .mstep").forEach((r) => r.classList.toggle("playing", +r.dataset.i === i));
+}
+async function playStep(st) {
+  if (st.mode !== "none") await (st.mode === "linear" ? API.moveG1 : API.moveG0)([st.x, st.y, st.z], null);
+  if (st.effect === "suctionOn") await API.suctionOn([], null);
+  else if (st.effect === "suctionOff") await API.suctionOff([], null);
+  else if (st.effect === "gripOpen") await API.gripper([1], null);
+  else if (st.effect === "gripClose") await API.gripper([2], null);
+  else if (st.effect === "gripIdle") await API.gripper([0], null);
+  if (st.t > 0) await wait(Serial.connected ? st.t * 1000 : (st.t * 1000) / S.speed);
+}
+async function playMacro() {
+  if (S.running || macro.busy) return;
+  if (!macro.steps.length) {
+    const st = document.getElementById("teachStatus");
+    st.className = "status-line err"; st.textContent = "La macro está vacía: añade pasos primero.";
+    return;
+  }
+  macro.busy = true; S.running = true; stopFlag = false; setRunning(true);
+  showTab("teach");
+  info("▶ Macro: reproduciendo " + macro.steps.length + " pasos…");
+  try {
+    for (let i = 0; i < macro.steps.length; i++) { macro.playIdx = i; markStep(i); await playStep(macro.steps[i]); }
+    ok("✓ Macro terminada.");
+  } catch (e) {
+    if (e === STOP) warn("■ Macro detenida.");
+    else err("La macro falló: " + ((e && e.message) || e));
+  } finally {
+    macro.playIdx = null; markStep(-1);
+    S.running = false; setRunning(false); macro.busy = false;
+  }
+}
+const MACRO_GCODE_EFFECT = {
+  suctionOn: ["M1401 A0", "M1400 A1023"],
+  suctionOff: ["M1400 A0", "M1401 A1", "G4 P300", "M1401 A0"],
+  gripOpen: ["M1401 A0", "M1400 A1000"],
+  gripClose: ["M1401 A1", "M1400 A1000", "G4 P3000", "M1400 A300"],
+  gripIdle: ["M1400 A0", "M1401 A1", "G4 P300", "M1400 A0", "M1401 A0"]
+};
+function macroGcode() {
+  const lines = [];
+  macro.steps.forEach((st) => {
+    if (st.mode !== "none") lines.push((st.mode === "linear" ? "G1" : "G0") + " X" + fmt(st.x) + " Y" + fmt(st.y) + " Z" + fmt(st.z), "M400");
+    const eff = MACRO_GCODE_EFFECT[st.effect];
+    if (eff) lines.push(...eff);
+    if (st.t > 0) lines.push("G4 P" + Math.round(st.t * 1000));
+  });
+  return lines.join("\n");
+}
+loadMacro();
+renderMacro();
+
 /* ===================== Interfaz ===================== */
 const EXAMPLES = [
   { id: "saludo", name: "Saludo (asentir 3 veces)", tool: "suction", code:
@@ -1355,6 +1495,38 @@ document.addEventListener("keydown", (e) => {
   jog(d[0], d[1], d[2]);
 });
 
+document.getElementById("teachAdd").addEventListener("click", addStep);
+document.getElementById("teachPlay").addEventListener("click", playMacro);
+document.getElementById("teachClear").addEventListener("click", () => {
+  if (!macro.steps.length) return;
+  macro.steps = []; saveMacro(); renderMacro();
+  const st = document.getElementById("teachStatus");
+  st.className = "status-line"; st.textContent = "Macro vaciada.";
+});
+document.getElementById("teachCopy").addEventListener("click", () => {
+  const st = document.getElementById("teachStatus");
+  if (!macro.steps.length) { st.className = "status-line err"; st.textContent = "La macro está vacía."; return; }
+  const text = macroGcode();
+  const done = () => { st.className = "status-line ok"; st.textContent = "G-code copiado (" + text.split("\n").length + " líneas). Pégalo en la consola del programa Huenit."; };
+  const fail = () => { st.className = "status-line err"; st.textContent = "No se pudo copiar. Selecciona el texto manualmente."; };
+  try { navigator.clipboard.writeText(text).then(done, () => { fallbackCopy(text) ? done() : fail(); }); }
+  catch (e) { fallbackCopy(text) ? done() : fail(); }
+});
+document.getElementById("teachList").addEventListener("change", (e) => {
+  const row = e.target.closest(".mstep"); if (!row) return;
+  const st = macro.steps[+row.dataset.i]; if (!st) return;
+  if (e.target.classList.contains("mmode")) st.mode = e.target.value;
+  else if (e.target.classList.contains("meffect")) st.effect = e.target.value;
+  else if (e.target.classList.contains("mt")) st.t = Math.max(0, parseFloat(e.target.value) || 0);
+  else return;
+  saveMacro();
+});
+document.getElementById("teachList").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || !b.dataset.act) return;
+  const row = b.closest(".mstep"); if (!row) return;
+  stepOp(+row.dataset.i, b.dataset.act);
+});
+
 function setRunning(r) {
   document.getElementById("runBtn").disabled = r;
   document.getElementById("stopBtn").disabled = !r;
@@ -1365,6 +1537,8 @@ function setRunning(r) {
   document.getElementById("jogStep").disabled = r;
   document.getElementById("jogSpeed").disabled = r;
   document.getElementById("gcodeInput").disabled = r;
+  ["teachAdd", "teachPlay", "teachClear", "teachCopy"].forEach((id) => { document.getElementById(id).disabled = r; });
+  document.querySelectorAll("#teachList select, #teachList input, #teachList button").forEach((b) => { b.disabled = r; });
 }
 let runMark = null, errMark = null;
 function markRun(ln) { if (!ln || !cm.addLineClass) return; clearRun(); runMark = cm.addLineClass(ln - 1, "background", "run-line"); cm.scrollIntoView({ line: ln - 1, ch: 0 }, 60); }
@@ -1407,7 +1581,7 @@ function renderScene() {
 
 function showTab(id) {
   document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
-  ["console", "gcode", "scene", "ref"].forEach((p) => { document.getElementById("pane-" + p).hidden = p !== id; });
+  ["console", "gcode", "scene", "teach", "ref"].forEach((p) => { document.getElementById("pane-" + p).hidden = p !== id; });
 }
 document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
 
