@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Simulador Huenit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>.CodeMirror{font-family:monospace;height:300px;color:#000;direction:ltr}.CodeMirror-lines{padding:4px 0}.CodeMirror pre.CodeMirror-line,.CodeMirror pre.CodeMirror-line-like{padding:0 4px}.CodeMirror-gutter-filler,.CodeMirror-scrollbar-filler{background-color:#fff}.CodeMirror-gutters{border-right:1px solid #ddd;background-color:#f7f7f7;white-space:nowrap}.CodeMirror-linenumber{padding:0 3px 0 5px;min-width:20px;text-align:right;color:#999;white-space:nowrap}.CodeMirror-guttermarker{color:#000}.CodeMirror-guttermarker-subtle{color:#999}.CodeMirror-cursor{border-left:1px solid #000;border-right:none;width:0}.CodeMirror div.CodeMirror-secondarycursor{border-left:1px solid silver}.cm-fat-cursor .CodeMirror-cursor{width:auto;border:0!important;background:#7e7}.cm-fat-cursor div.CodeMirror-cursors{z-index:1}.cm-fat-cursor .CodeMirror-line::selection,.cm-fat-cursor .CodeMirror-line>span::selection,.cm-fat-cursor .CodeMirror-line>span>span::selection{background:0 0}.cm-fat-cursor .CodeMirror-line::-moz-selection,.cm-fat-cursor .CodeMirror-line>span::-moz-selection,.cm-fat-cursor .CodeMirror-line>span>span::-moz-selection{background:0 0}.cm-fat-cursor{caret-color:transparent}@-moz-keyframes blink{50%{background-color:transparent}}@-webkit-keyframes blink{50%{background-color:transparent}}@keyframes blink{50%{background-color:transparent}}.cm-tab{display:inline-block;text-decoration:inherit}.CodeMirror-rulers{position:absolute;left:0;right:0;top:-50px;bottom:0;overflow:hidden}.CodeMirror-ruler{border-left:1px solid #ccc;top:0;bottom:0;position:absolute}.cm-s-default .cm-header{color:#00f}.cm-s-default .cm-quote{color:#090}.cm-negative{color:#d44}.cm-positive{color:#292}.cm-header,.cm-strong{font-weight:700}.cm-em{font-style:italic}.cm-link{text-decoration:underline}.cm-strikethrough{text-decoration:line-through}.cm-s-default .cm-keyword{color:#708}.cm-s-default .cm-atom{color:#219}.cm-s-default .cm-number{color:#164}.cm-s-default .cm-def{color:#00f}.cm-s-default .cm-variable-2{color:#05a}.cm-s-default .cm-type,.cm-s-default .cm-variable-3{color:#085}.cm-s-default .cm-comment{color:#a50}.cm-s-default .cm-string{color:#a11}.cm-s-default .cm-string-2{color:#f50}.cm-s-default .cm-meta{color:#555}.cm-s-default .cm-qualifier{color:#555}.cm-s-default .cm-builtin{color:#30a}.cm-s-default .cm-bracket{color:#997}.cm-s-default .cm-tag{color:#170}.cm-s-default .cm-attribute{color:#00c}.cm-s-default .cm-hr{color:#999}.cm-s-default .cm-link{color:#00c}.cm-s-default .cm-error{color:red}.cm-invalidchar{color:red}.CodeMirror-composing{border-bottom:2px solid}div.CodeMirror span.CodeMirror-matchingbracket{color:#0b0}div.CodeMirror span.CodeMirror-nonmatchingbracket{color:#a22}.CodeMirror-matchingtag{background:rgba(255,150,0,.3)}.CodeMirror-activeline-background{background:#e8f2ff}.CodeMirror{position:relative;overflow:hidden;background:#fff}.CodeMirror-scroll{overflow:scroll!important;margin-bottom:-50px;margin-right:-50px;padding-bottom:50px;height:100%;outline:0;position:relative;z-index:0}.CodeMirror-sizer{position:relative;border-right:50px solid transparent}.CodeMirror-gutter-filler,.CodeMirror-hscrollbar,.CodeMirror-scrollbar-filler,.CodeMirror-vscrollbar{position:absolute;z-index:6;display:none;outline:0}.CodeMirror-vscrollbar{right:0;top:0;overflow-x:hidden;overflow-y:scroll}.CodeMirror-hscrollbar{bottom:0;left:0;overflow-y:hidden;overflow-x:scroll}.CodeMirror-scrollbar-filler{right:0;bottom:0}.CodeMirror-gutter-filler{left:0;bottom:0}.CodeMirror-gutters{position:absolute;left:0;top:0;min-height:100%;z-index:3}.CodeMirror-gutter{white-space:normal;height:100%;display:inline-block;vertical-align:top;margin-bottom:-50px}.CodeMirror-gutter-wrapper{position:absolute;z-index:4;background:0 0!important;border:none!important}.CodeMirror-gutter-background{position:absolute;top:0;bottom:0;z-index:4}.CodeMirror-gutter-elt{position:absolute;cursor:default;z-index:4}.CodeMirror-gutter-wrapper ::selection{background-color:transparent}.CodeMirror-gutter-wrapper ::-moz-selection{background-color:transparent}.CodeMirror-lines{cursor:text;min-height:1px}.CodeMirror pre.CodeMirror-line,.CodeMirror pre.CodeMirror-line-like{-moz-border-radius:0;-webkit-border-radius:0;border-radius:0;border-width:0;background:0 0;font-family:inherit;font-size:inherit;margin:0;white-space:pre;word-wrap:normal;line-height:inherit;color:inherit;z-index:2;position:relative;overflow:visible;-webkit-tap-highlight-color:transparent;-webkit-font-variant-ligatures:contextual;font-variant-ligatures:contextual}.CodeMirror-wrap pre.CodeMirror-line,.CodeMirror-wrap pre.CodeMirror-line-like{word-wrap:break-word;white-space:pre-wrap;word-break:normal}.CodeMirror-linebackground{position:absolute;left:0;right:0;top:0;bottom:0;z-index:0}.CodeMirror-linewidget{position:relative;z-index:2;padding:.1px}.CodeMirror-rtl pre{direction:rtl}.CodeMirror-code{outline:0}.CodeMirror-gutter,.CodeMirror-gutters,.CodeMirror-linenumber,.CodeMirror-scroll,.CodeMirror-sizer{-moz-box-sizing:content-box;box-sizing:content-box}.CodeMirror-measure{position:absolute;width:100%;height:0;overflow:hidden;visibility:hidden}.CodeMirror-cursor{position:absolute;pointer-events:none}.CodeMirror-measure pre{position:static}div.CodeMirror-cursors{visibility:hidden;position:relative;z-index:3}div.CodeMirror-dragcursors{visibility:visible}.CodeMirror-focused div.CodeMirror-cursors{visibility:visible}.CodeMirror-selected{background:#d9d9d9}.CodeMirror-focused .CodeMirror-selected{background:#d7d4f0}.CodeMirror-crosshair{cursor:crosshair}.CodeMirror-line::selection,.CodeMirror-line>span::selection,.CodeMirror-line>span>span::selection{background:#d7d4f0}.CodeMirror-line::-moz-selection,.CodeMirror-line>span::-moz-selection,.CodeMirror-line>span>span::-moz-selection{background:#d7d4f0}.cm-searching{background-color:#ffa;background-color:rgba(255,255,0,.4)}.cm-force-border{padding-right:.1px}@media print{.CodeMirror div.CodeMirror-cursors{visibility:hidden}}.cm-tab-wrap-hack:after{content:''}span.CodeMirror-selectedtext{background:0 0}</style>
+<style>
+/* Layout: banco de trabajo — editor a la izquierda, escena 3D a la derecha, consola debajo de la escena; una columna en el teléfono */
+:root {
+  --bg: #eef0f4;
+  --panel: #ffffff;
+  --sunk: #f6f7fa;
+  --ink: #1c1e27;
+  --muted: #5d6273;
+  --line: #d9dce5;
+  --accent: #5b3fd6;
+  --accent-ink: #ffffff;
+  --accent-soft: #ece8fd;
+  --ok: #1d7f52;
+  --warn: #a8670f;
+  --err: #c2352b;
+  --err-soft: #fbe9e7;
+  --run-line: #efeafe;
+  --stage: #e4e7ee;
+  --table: #f4f5f8;
+  --grid: #c9cdd8;
+  --code-kw: #7b2fbf;
+  --code-str: #1f7a4d;
+  --code-num: #b35309;
+  --code-com: #8a8fa0;
+  --code-fn: #2350b8;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111219; --panel: #191b24; --sunk: #14151d; --ink: #e6e7ee; --muted: #9a9fb3; --line: #2b2e3b;
+    --accent: #a08cff; --accent-ink: #14121f; --accent-soft: #2a2546; --ok: #4cc28a; --warn: #e2a44a; --err: #ff7a6e; --err-soft: #3a1f1e;
+    --run-line: #2a2546; --stage: #1c1e28; --table: #262935; --grid: #3a3e4e;
+    --code-kw: #c79bff; --code-str: #7fd3a4; --code-num: #f2b36b; --code-com: #6f7489; --code-fn: #8db4ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111219; --panel: #191b24; --sunk: #14151d; --ink: #e6e7ee; --muted: #9a9fb3; --line: #2b2e3b;
+  --accent: #a08cff; --accent-ink: #14121f; --accent-soft: #2a2546; --ok: #4cc28a; --warn: #e2a44a; --err: #ff7a6e; --err-soft: #3a1f1e;
+  --run-line: #2a2546; --stage: #1c1e28; --table: #262935; --grid: #3a3e4e;
+  --code-kw: #c79bff; --code-str: #7fd3a4; --code-num: #f2b36b; --code-com: #6f7489; --code-fn: #8db4ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 28px;
+}
+.wrap { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.brand p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); white-space: nowrap; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.chip.live { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); }
+.chip.live .dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent); }
+
+.bench { display: grid; grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); gap: 14px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+.bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 12px; }
+.bar + .bar, .bar.sep { border-top: 1px solid var(--line); }
+.bar .grow { flex: 1 1 auto; }
+label.lbl { font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+select, button { font: inherit; }
+select { background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
+.btn { display: inline-flex; align-items: center; gap: 7px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunk); color: var(--ink); padding: 7px 12px; font-weight: 500; cursor: pointer; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+.btn.stop { color: var(--err); }
+.btn svg { width: 15px; height: 15px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.notice { margin: 0; padding: 8px 12px; font-size: 0.86rem; color: var(--muted); border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.linkbtn { background: none; border: 0; color: var(--accent); font-weight: 600; cursor: pointer; padding: 0; }
+
+.editor-wrap { border-top: 1px solid var(--line); }
+.CodeMirror { height: 470px; font-family: var(--font-mono); font-size: 13.5px; line-height: 1.6; background: var(--panel); color: var(--ink); }
+.CodeMirror-gutters { background: var(--sunk); border-right: 1px solid var(--line); }
+.CodeMirror-linenumber { color: var(--muted); }
+.CodeMirror-cursor { border-left: 2px solid var(--accent); }
+.CodeMirror-selected, .CodeMirror-focused .CodeMirror-selected { background: color-mix(in srgb, var(--accent) 22%, transparent) !important; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background: var(--sunk); }
+.cm-s-default .cm-keyword { color: var(--code-kw); font-weight: 500; }
+.cm-s-default .cm-string { color: var(--code-str); }
+.cm-s-default .cm-number { color: var(--code-num); }
+.cm-s-default .cm-comment { color: var(--code-com); font-style: italic; }
+.cm-s-default .cm-builtin, .cm-s-default .cm-def { color: var(--code-fn); }
+.cm-s-default .cm-variable, .cm-s-default .cm-variable-2, .cm-s-default .cm-property, .cm-s-default .cm-operator, .cm-s-default .cm-punctuation { color: var(--ink); }
+.cm-s-default .cm-bracket { color: var(--muted); }
+.CodeMirror-matchingbracket { color: var(--accent) !important; text-decoration: underline; }
+.run-line { background: var(--run-line); box-shadow: inset 3px 0 0 var(--accent); }
+.err-line { background: var(--err-soft); box-shadow: inset 3px 0 0 var(--err); }
+
+.stage { position: relative; aspect-ratio: 4 / 3; max-width: 100%; border-radius: var(--r) var(--r) 0 0; overflow: hidden; background: var(--stage); }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.hud { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; pointer-events: none; }
+.readout { font-family: var(--font-mono); font-size: 0.8rem; background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; display: grid; grid-template-columns: auto auto; column-gap: 10px; font-variant-numeric: tabular-nums; }
+.readout b { color: var(--muted); font-weight: 500; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); color: var(--muted); }
+.tag.on { color: var(--accent); border-color: var(--accent); }
+.tag.bad { color: var(--err); border-color: var(--err); }
+.stage-help { position: absolute; right: 10px; bottom: 8px; font-size: 0.74rem; color: var(--muted); pointer-events: none; background: color-mix(in srgb, var(--panel) 75%, transparent); padding: 2px 7px; border-radius: 6px; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 0.9rem; }
+
+.tabs { display: flex; gap: 2px; padding: 6px 8px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 7px 10px; color: var(--muted); font-weight: 600; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .count { font-family: var(--font-mono); font-weight: 500; font-size: 0.75rem; color: var(--muted); margin-left: 4px; }
+.pane { height: 230px; overflow: auto; padding: 8px 12px; min-width: 0; }
+.log { font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; margin: 0; }
+.log .info { color: var(--muted); }
+.log .err { color: var(--err); }
+.log .ok { color: var(--ok); }
+.log .warn { color: var(--warn); }
+.log .ln { color: var(--muted); display: inline-block; min-width: 3.2em; }
+.empty { color: var(--muted); font-size: 0.86rem; }
+
+table.ref { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+table.ref td { padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.ref td:first-child { font-family: var(--font-mono); font-size: 0.8rem; white-space: nowrap; color: var(--code-fn); }
+table.ref tr.group td { font-family: var(--font-body); color: var(--muted); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding-top: 12px; }
+.ref-wrap { overflow-x: auto; }
+.pane p { margin: 0 0 8px; max-width: 70ch; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.scene-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.obj { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; gap: 10px; align-items: flex-start; background: var(--sunk); }
+.sw { width: 16px; height: 16px; border-radius: 4px; flex: none; margin-top: 2px; }
+.obj .t { font-weight: 600; }
+.obj .m { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.classroom { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.classroom .card { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.classroom h2 { font-family: var(--font-display); font-size: 1.12rem; font-weight: 600; margin: 0; text-wrap: balance; }
+.classroom ol { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; max-width: 64ch; }
+.classroom p { margin: 0; color: var(--muted); max-width: 64ch; }
+.eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent); }
+.status-line { font-size: 0.86rem; color: var(--muted); min-height: 1.3em; }
+.status-line.err { color: var(--err); }
+.status-line.ok { color: var(--ok); }
+
+@media (max-width: 980px) {
+  .bench { grid-template-columns: minmax(0, 1fr); }
+  .CodeMirror { height: 360px; }
+  .classroom { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .brand h1 { font-size: 1.3rem; }
+  .CodeMirror { height: 300px; font-size: 13px; }
+  .pane { height: 210px; }
+  .stage-help { display: none; }
+  .readout { font-size: 0.72rem; padding: 4px 7px; }
+  .tag { font-size: 0.64rem; padding: 2px 6px; }
+  #tagReach { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Simulador Huenit</h1>
+      <p>Escribe Python para el brazo robótico y míralo moverse en 3D, sin conectar el robot.</p>
+    </div>
+    <span class="chip" id="modeChip"><span class="dot"></span><span id="modeText">Simulación</span></span>
+  </header>
+
+  <div class="bench">
+    <section class="col">
+      <div class="card">
+        <div class="bar">
+          <label class="lbl" for="exampleSel">Ejemplo</label>
+          <select id="exampleSel" aria-label="Cargar un ejemplo">
+            <option value="">Elegir…</option>
+          </select>
+          <span class="grow"></span>
+          <label class="lbl" for="toolSel">Herramienta</label>
+          <select id="toolSel">
+            <option value="suction">Ventosa (succión)</option>
+            <option value="gripper">Pinza blanda</option>
+          </select>
+        </div>
+        <p class="notice" id="exampleNotice" hidden><span id="exampleNoticeText"></span><button class="linkbtn" id="restoreBtn" type="button">Recuperar mi código</button></p>
+        <div class="editor-wrap"><textarea id="code" aria-label="Código Python"></textarea></div>
+        <div class="bar sep">
+          <button class="btn primary" id="runBtn" type="button"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>Ejecutar</button>
+          <button class="btn stop" id="stopBtn" type="button" disabled><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/></svg>Detener</button>
+          <button class="btn" id="resetBtn" type="button">Reiniciar escena</button>
+          <span class="grow"></span>
+          <label class="lbl" for="speedSel">Velocidad</label>
+          <select id="speedSel">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="col">
+      <div class="card">
+        <div class="stage" id="stage">
+          <div class="loading" id="loading">Cargando escena 3D…</div>
+          <div class="hud">
+            <div class="readout" aria-live="off">
+              <b>X</b><span id="rx">0.0</span>
+              <b>Y</b><span id="ry">180.0</span>
+              <b>Z</b><span id="rz">0.0</span>
+            </div>
+            <div class="tags">
+              <span class="tag" id="tagTool">Ventosa</span>
+              <span class="tag" id="tagHold" hidden>Sujetando</span>
+              <span class="tag" id="tagReach">Zona alcanzable a Z = 0</span>
+            </div>
+          </div>
+          <div class="stage-help">Arrastra para girar · rueda para acercar</div>
+        </div>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="console" id="tab-console">Consola</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="gcode" id="tab-gcode">Comandos al robot<span class="count" id="gcodeCount">0</span></button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="scene" id="tab-scene">Escena</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="ref" id="tab-ref">Funciones</button>
+        </div>
+        <div class="pane" id="pane-console" role="tabpanel"><pre class="log" id="log"><span class="info">Pulsa Ejecutar para correr el programa. Lo que imprimas con print() aparece aquí.</span></pre></div>
+        <div class="pane" id="pane-gcode" role="tabpanel" hidden><pre class="log" id="gcodeLog"><span class="info">Aquí verás, línea por línea, los comandos G-code que la librería robot.py enviaría por USB al brazo real.</span></pre></div>
+        <div class="pane" id="pane-scene" role="tabpanel" hidden>
+          <p>Posición de cada objeto en coordenadas del robot (mm). La columna "tocar arriba" es la Z que debe tener la herramienta actual para tocar la cara superior del cubo.</p>
+          <div class="scene-list" id="sceneList"></div>
+        </div>
+        <div class="pane" id="pane-ref" role="tabpanel" hidden>
+          <p>Son las mismas funciones de la librería <code>robot</code> que trae el programa Huenit, así que el código funciona igual en el robot real. Empieza siempre con <code>import robot</code>.</p>
+          <div class="ref-wrap">
+          <table class="ref">
+            <tr class="group"><td colspan="2">Movimiento</td></tr>
+            <tr><td>robot.moveG0(x, y, z)</td><td>Mueve la punta a (x, y, z) en modo arco, el movimiento normal del brazo. Espera a que termine.</td></tr>
+            <tr><td>robot.moveG1(x, y, z)</td><td>Igual, pero en línea recta (modo lineal).</td></tr>
+            <tr><td>robot.goHome()</td><td>Vuelve a la posición de casa (0, 180, 0).</td></tr>
+            <tr><td>robot.getLoc()</td><td>Devuelve la posición actual como lista [x, y, z].</td></tr>
+            <tr><td>robot.checkXYZ(x, y, z)</td><td>Devuelve 1 si el brazo puede llegar a ese punto y 0 si no. Usa la misma fórmula que la librería oficial.</td></tr>
+            <tr class="group"><td colspan="2">Herramientas</td></tr>
+            <tr><td>robot.suctionOn()</td><td>Enciende la ventosa: agarra el cubo que esté tocando por arriba.</td></tr>
+            <tr><td>robot.suctionOff()</td><td>Apaga la ventosa y suelta el objeto.</td></tr>
+            <tr><td>robot.gripper(modo)</td><td>Pinza: 0 = reposo, 1 = abrir, 2 = agarrar (tarda unos 3 s).</td></tr>
+            <tr><td>robot.suctionAngle(grados, velocidad)</td><td>Gira la ventosa (módulo giratorio). De 0 a 269 grados.</td></tr>
+            <tr class="group"><td colspan="2">Otras</td></tr>
+            <tr><td>time.sleep(segundos)</td><td>Espera. Necesita <code>import time</code>.</td></tr>
+            <tr><td>robot.getDeg()</td><td>Ángulos de los motores. En la simulación es aproximado.</td></tr>
+            <tr><td>robot.freeMod() / robot.unsetFreeMod()</td><td>Apaga o enciende los motores (para mover el brazo con la mano).</td></tr>
+            <tr><td>robot.pumpOn(), pumpOff(), valveOn(), valveOff()</td><td>Control directo de la bomba y la válvula de aire.</td></tr>
+            <tr><td>robot.sendCommand("G0 X0 Y200 Z50\n")</td><td>Envía un comando G-code a mano. La simulación entiende G0 y G1.</td></tr>
+            <tr class="group"><td colspan="2">Coordenadas</td></tr>
+            <tr><td>Origen</td><td>Centro de la base. Mirando el brazo desde atrás: X hacia los lados, Y hacia adelante, Z hacia arriba. Todo en milímetros.</td></tr>
+            <tr><td>Mesa</td><td>Con ventosa la mesa queda en Z ≈ −60 y con pinza en Z ≈ −20, según los ejemplos oficiales. Mide la de tu robot antes de la clase.</td></tr>
+          </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="classroom" aria-label="Usar el robot real">
+    <div class="card">
+      <span class="eyebrow">En clase · opción recomendada</span>
+      <h2>Ejecutar el mismo código en el robot real</h2>
+      <ol>
+        <li>Conecta el brazo a la PC con el cable USB-C (puerto de PC).</li>
+        <li>Abre el programa Huenit, ve a <b>Código</b> y crea un proyecto de <b>Python</b>.</li>
+        <li>Pega el código, pasa el mouse sobre el icono del brazo y pulsa <b>Conectar</b>.</li>
+        <li>Pulsa <b>Live</b>. El brazo hará lo mismo que en la simulación.</li>
+      </ol>
+      <div class="bar" style="padding:0"><button class="btn" id="copyBtn" type="button">Copiar código</button><span class="status-line" id="copyStatus"></span></div>
+    </div>
+    <div class="card">
+      <span class="eyebrow">En clase · desde el navegador</span>
+      <h2>Conectar el brazo por USB a esta página</h2>
+      <p>Funciona en Chrome o Edge para computadora. Con el robot conectado, Ejecutar mueve el brazo real y la simulación a la vez. Cierra antes el programa Huenit, porque solo una aplicación puede usar el puerto.</p>
+      <div class="bar" style="padding:0"><button class="btn primary" id="serialBtn" type="button">Conectar robot</button><span class="status-line" id="serialStatus"></span></div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+<script>
+(function () {
+"use strict";
+
+/* ===================== Geometría del brazo ===================== */
+// Zona de alcance: copia exacta de checkXYZ() de robot.py (librería oficial de Huenit).
+function checkXYZ(x, y, z) {
+  const leng = Math.sqrt(x * x + y * y);
+  if (leng <= 213.44 && z >= 2.182) {
+    if (z <= 9.066) {
+      if (!(leng > 61 + Math.pow(55 * 55 - (z - 30) ** 2, 0.5))) return 0;
+    } else if (z <= 100.1) {
+      if (!(leng > Math.pow(152 ** 2 - (z - 147) ** 2, 0.5) + 48)) return 0;
+    } else {
+      if (!(leng > Math.pow(3600 - (z - 148) ** 2, 0.5) + 153.5)) return 0;
+    }
+  } else if (leng <= 224.566 && z <= 3.241) {
+    if (!(leng > Math.pow(144 ** 2 - (z + 138) ** 2, 0.5) + 81)) return 0;
+  } else {
+    if (!((leng < (16500 + 100 * z) / 17) && ((leng - 228) ** 2 + (z + 4) ** 2 < 150 ** 2))) return 0;
+  }
+  if (y < 0) {
+    const ix = (-1 * y) / leng;
+    if (0.98 < ix) return 0;
+  }
+  return 1;
+}
+// Math.pow de un negativo da NaN y la comparación falla, igual que en Python (que daría un complejo y error).
+// Medidas aproximadas para dibujar el brazo (mm). El alcance real lo decide checkXYZ.
+const G = { flange: 110, shoulder: 135, L1: 160, L2: 160, reachA: 60, wristUp: 20 };
+// Altura de la punta de cada herramienta sobre la mesa: punta = Z + T
+const TOOL = {
+  suction: { name: "Ventosa", T: 60 },
+  gripper: { name: "Pinza", T: 20 }
+};
+const HOME = { x: 0, y: 180, z: 0 };
+const CUBE = 25;
+
+/* ===================== Estado ===================== */
+const START_CUBES = [
+  { id: "rojo", label: "Cubo rojo", color: 0xd8483b, css: "#d8483b", x: -163, y: 245 },
+  { id: "verde", label: "Cubo verde", color: 0x2f9e5b, css: "#2f9e5b", x: -150, y: 150 },
+  { id: "amarillo", label: "Cubo amarillo", color: 0xe8b21f, css: "#e8b21f", x: 40, y: 300 }
+];
+const PADS = [
+  { id: "A", x: 120, y: 250 },
+  { id: "B", x: 150, y: 150 }
+];
+const S = {
+  pos: { ...HOME }, theta: 0, tool: "suction", pump: 0, valve: 0, grip: 0, held: null, holdOff: null,
+  free: false, rot: 0, cubes: [], running: false, speed: 1, gcodeN: 0
+};
+
+/* ===================== Escena 3D ===================== */
+let renderer, scene, camera, controls, parts = {}, reachTex, reachCtx, trail, trailPts = [], ghost;
+const stageEl = document.getElementById("stage");
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function w2t(x, y, h) { return new THREE.Vector3(x, h, -y); } // robot (X,Y) + altura → Three
+
+function initScene() {
+  if (!window.THREE) { document.getElementById("loading").textContent = "No se pudo cargar la escena 3D. Revisa tu conexión y recarga la página."; return; }
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
+  document.getElementById("loading").remove();
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(40, 4 / 3, 5, 5000);
+  camera.position.set(330, 460, 560);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 60, -170);
+  controls.enableDamping = true;
+  controls.maxPolarAngle = Math.PI * 0.49;
+  controls.minDistance = 250; controls.maxDistance = 1600;
+  controls.update();
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8fa0, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75);
+  sun.position.set(-250, 700, 350);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -500, right: 500, top: 500, bottom: -500, near: 100, far: 1600 });
+  scene.add(sun);
+
+  // Mesa, cuadrícula de 50 mm y zona alcanzable
+  parts.tableMat = new THREE.MeshStandardMaterial({ roughness: 0.95 });
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(1000, 900), parts.tableMat);
+  table.rotation.x = -Math.PI / 2; table.position.set(0, 0, -150); table.receiveShadow = true;
+  scene.add(table);
+  parts.grid = new THREE.GridHelper(800, 16);
+  parts.grid.position.set(0, 0.2, -100);
+  scene.add(parts.grid);
+  const rc = document.createElement("canvas"); rc.width = rc.height = 200;
+  reachCtx = rc.getContext("2d");
+  reachTex = new THREE.CanvasTexture(rc);
+  const reach = new THREE.Mesh(new THREE.PlaneGeometry(800, 800), new THREE.MeshBasicMaterial({ map: reachTex, transparent: true, depthWrite: false }));
+  reach.rotation.x = -Math.PI / 2; reach.position.set(0, 0.4, 0);
+  scene.add(reach);
+
+  // Ejes
+  const axMat = (c) => new THREE.LineBasicMaterial({ color: c });
+  const axis = (to, c) => { const g = new THREE.BufferGeometry().setFromPoints([w2t(0, 0, 0.6), to]); scene.add(new THREE.Line(g, axMat(c))); };
+  axis(w2t(380, 0, 0.6), 0xd8483b); axis(w2t(0, 380, 0.6), 0x2f9e5b);
+  scene.add(textSprite("X+", "#d8483b", w2t(400, 0, 8), 34));
+  scene.add(textSprite("Y+", "#2f9e5b", w2t(0, 400, 8), 34));
+
+  // Zonas de destino
+  PADS.forEach((p) => {
+    const m = new THREE.Mesh(new THREE.RingGeometry(20, 24, 4, 1), new THREE.MeshBasicMaterial({ color: 0x5b3fd6 }));
+    m.rotation.x = -Math.PI / 2; m.rotation.z = Math.PI / 4; m.position.copy(w2t(p.x, p.y, 0.5));
+    scene.add(m);
+    scene.add(textSprite(p.id, "#5b3fd6", w2t(p.x + 34, p.y + 4, 6), 26));
+  });
+
+  buildRobot();
+  // Estela de la punta
+  trail = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x7c5cff, transparent: true, opacity: 0.8 }));
+  scene.add(trail);
+  ghost = new THREE.Mesh(new THREE.SphereGeometry(7, 16, 12), new THREE.MeshBasicMaterial({ color: 0xc2352b, transparent: true, opacity: 0.85 }));
+  ghost.visible = false; scene.add(ghost);
+
+  applyTheme();
+  new ResizeObserver(resize).observe(stageEl);
+  resize();
+  requestAnimationFrame(loop);
+}
+function textSprite(text, color, pos, size) {
+  const c = document.createElement("canvas"); c.width = 128; c.height = 64;
+  const g = c.getContext("2d");
+  g.font = "600 40px IBM Plex Sans, sans-serif"; g.fillStyle = color; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(text, 64, 34);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false }));
+  s.position.copy(pos); s.scale.set(size * 2, size, 1);
+  return s;
+}
+function buildRobot() {
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2f3f6, roughness: 0.55 });
+  const grey = new THREE.MeshStandardMaterial({ color: 0xb9bdc8, roughness: 0.6 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x5c6070, roughness: 0.5 });
+  const metal = new THREE.MeshStandardMaterial({ color: 0xc9ccd4, metalness: 0.6, roughness: 0.35 });
+  const shadow = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
+  const R = new THREE.Group(); scene.add(R);
+  const base = shadow(new THREE.Mesh(new THREE.CylinderGeometry(70, 76, 48, 48), white)); base.position.y = 24; R.add(base);
+  const ring = shadow(new THREE.Mesh(new THREE.CylinderGeometry(77, 77, 6, 48), grey)); ring.position.y = 3; R.add(ring);
+  const turret = new THREE.Group(); turret.position.y = 0; R.add(turret);
+  const neck = shadow(new THREE.Mesh(new THREE.CylinderGeometry(55, 62, 50, 40), white)); neck.position.y = 70; turret.add(neck);
+  const body = shadow(new THREE.Mesh(new THREE.BoxGeometry(90, 70, 110), white)); body.position.set(-10, G.shoulder - 10, 0); turret.add(body);
+  [-1, 1].forEach((s) => {
+    const ear = shadow(new THREE.Mesh(new THREE.CylinderGeometry(30, 30, 34, 32), white));
+    ear.rotation.x = Math.PI / 2; ear.position.set(-10, G.shoulder, s * 70); turret.add(ear);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(24, 24, 2, 32), grey);
+    cap.rotation.x = Math.PI / 2; cap.position.set(-10, G.shoulder, s * 88); turret.add(cap);
+  });
+  const box = (w, d, mat) => { const m = shadow(new THREE.Mesh(new THREE.BoxGeometry(1, w, d), mat)); turret.add(m); return m; };
+  parts.upper = box(42, 50, white);
+  parts.fore = box(36, 40, white);
+  const elbow = shadow(new THREE.Mesh(new THREE.CylinderGeometry(24, 24, 56, 32), grey)); elbow.rotation.x = Math.PI / 2; turret.add(elbow); parts.elbow = elbow;
+  const shoulderJ = shadow(new THREE.Mesh(new THREE.CylinderGeometry(26, 26, 60, 32), grey)); shoulderJ.rotation.x = Math.PI / 2; shoulderJ.position.set(0, G.shoulder, 0); turret.add(shoulderJ);
+  parts.head = box(30, 40, white);
+  // Herramientas: cuelgan de la brida
+  const toolG = new THREE.Group(); turret.add(toolG); parts.toolG = toolG;
+  const suction = new THREE.Group(); toolG.add(suction);
+  const sLen = G.flange - TOOL.suction.T;
+  const stem = shadow(new THREE.Mesh(new THREE.CylinderGeometry(7, 7, sLen - 10, 20), metal)); stem.position.y = -(sLen - 10) / 2; suction.add(stem);
+  const cup = shadow(new THREE.Mesh(new THREE.CylinderGeometry(9, 6, 10, 24), new THREE.MeshStandardMaterial({ color: 0xe9e4d0, roughness: 0.8 }))); cup.position.y = -sLen + 5; suction.add(cup);
+  const mark = new THREE.Mesh(new THREE.BoxGeometry(14, 2, 2), dark); mark.position.set(0, -sLen + 14, 8); suction.add(mark);
+  parts.suction = suction;
+  const gripper = new THREE.Group(); toolG.add(gripper);
+  const gLen = G.flange - TOOL.gripper.T;
+  const gbody = shadow(new THREE.Mesh(new THREE.CylinderGeometry(16, 18, 34, 24), white)); gbody.position.y = -17; gripper.add(gbody);
+  parts.fingers = [];
+  [-1, 1].forEach((s) => {
+    const pivot = new THREE.Group(); pivot.position.set(0, -34, s * 10); gripper.add(pivot);
+    const f = shadow(new THREE.Mesh(new THREE.BoxGeometry(16, gLen - 24, 6), new THREE.MeshStandardMaterial({ color: 0xe9e4d0, roughness: 0.85 })));
+    f.position.y = -(gLen - 24) / 2; pivot.add(f);
+    parts.fingers.push({ pivot, s });
+  });
+  parts.gripper = gripper;
+  parts.turret = turret;
+}
+
+function solve(p) {
+  // p: posición reportada (X, Y, Z). Devuelve ángulos para dibujar.
+  const r = Math.hypot(p.x, p.y);
+  if (r > 0.5) S.theta = Math.atan2(p.x, p.y);
+  const h = p.z + G.flange;
+  const wx = r - G.reachA, wy = h + G.wristUp;
+  const dx = wx, dy = wy - G.shoulder;
+  let d = Math.hypot(dx, dy);
+  d = Math.min(Math.max(d, 1), G.L1 + G.L2 - 0.01);
+  const a = Math.atan2(dy, dx) + Math.acos(Math.min(1, Math.max(-1, (G.L1 * G.L1 + d * d - G.L2 * G.L2) / (2 * G.L1 * d))));
+  const E = { x: G.L1 * Math.cos(a), y: G.shoulder + G.L1 * Math.sin(a) };
+  return { r, h, a, E, W: { x: wx, y: wy }, fore: Math.atan2(wy - E.y, wx - E.x) };
+}
+function placeBox(m, p, q) {
+  const dx = q.x - p.x, dy = q.y - p.y;
+  m.scale.x = Math.max(1, Math.hypot(dx, dy));
+  m.position.set((p.x + q.x) / 2, (p.y + q.y) / 2, 0);
+  m.rotation.set(0, 0, Math.atan2(dy, dx));
+}
+function pose() {
+  if (!parts.turret) return;
+  const k = solve(S.pos);
+  parts.turret.rotation.y = Math.PI / 2 - S.theta;
+  placeBox(parts.upper, { x: 0, y: G.shoulder }, k.E);
+  placeBox(parts.fore, k.E, k.W);
+  parts.elbow.position.set(k.E.x, k.E.y, 0);
+  placeBox(parts.head, { x: k.W.x - 14, y: k.W.y - 10 }, { x: k.r + 16, y: k.W.y - 10 });
+  parts.toolG.position.set(k.r, k.h, 0);
+  parts.toolG.rotation.y = (S.rot * Math.PI) / 180;
+  parts.suction.visible = S.tool === "suction";
+  parts.gripper.visible = S.tool === "gripper";
+  const open = S.grip === 1 ? 0.32 : S.grip === 2 ? -0.05 : 0.1;
+  parts.fingers.forEach((f) => { f.pivot.rotation.x = -f.s * open; });
+  // cubo sujeto
+  if (S.held) {
+    const t = tip();
+    S.held.x = t.x + S.holdOff.x; S.held.y = t.y + S.holdOff.y; S.held.h = t.h + S.holdOff.h;
+  }
+  S.cubes.forEach((c) => c.mesh.position.copy(w2t(c.x, c.y, c.h + CUBE / 2)));
+  document.getElementById("rx").textContent = S.pos.x.toFixed(1);
+  document.getElementById("ry").textContent = S.pos.y.toFixed(1);
+  document.getElementById("rz").textContent = S.pos.z.toFixed(1);
+}
+function tip() { return { x: S.pos.x, y: S.pos.y, h: S.pos.z + TOOL[S.tool].T }; }
+
+let reachZ = null;
+function drawReach() {
+  if (!reachCtx) return;
+  const z = Math.round(S.pos.z);
+  if (z === reachZ) return;
+  reachZ = z;
+  const n = 200, g = reachCtx, img = g.createImageData(n, n);
+  const col = hexRgb(css("--accent") || "#5b3fd6");
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const x = -400 + (i + 0.5) * 4, y = 400 - (j + 0.5) * 4;
+    if (checkXYZ(x, y, z)) { const o = (j * n + i) * 4; img.data[o] = col[0]; img.data[o + 1] = col[1]; img.data[o + 2] = col[2]; img.data[o + 3] = 46; }
+  }
+  g.putImageData(img, 0, 0);
+  reachTex.needsUpdate = true;
+  document.getElementById("tagReach").textContent = "Zona alcanzable a Z = " + z;
+}
+function hexRgb(h) { h = h.replace("#", ""); if (h.length === 3) h = h.split("").map((c) => c + c).join(""); const v = parseInt(h, 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; }
+function applyTheme() {
+  if (!renderer) return;
+  scene.background = new THREE.Color(css("--stage") || "#e4e7ee");
+  parts.tableMat.color = new THREE.Color(css("--table") || "#f4f5f8");
+  const gc = new THREE.Color(css("--grid") || "#c9cdd8");
+  parts.grid.material.color = gc; if (parts.grid.material.vertexColors) { parts.grid.material.vertexColors = false; parts.grid.material.needsUpdate = true; }
+  reachZ = null; drawReach();
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+function resize() {
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+let anim = null; // movimiento en curso
+function loop(t) {
+  requestAnimationFrame(loop);
+  if (anim) anim.step(t);
+  if (ghost.visible) { ghost.material.opacity = Math.max(0, ghost.material.opacity - 0.004); if (ghost.material.opacity <= 0) ghost.visible = false; }
+  controls.update();
+  renderer.render(scene, camera);
+}
+function pushTrail() {
+  const t = tip();
+  trailPts.push(w2t(t.x, t.y, t.h));
+  if (trailPts.length > 900) trailPts.shift();
+  trail.geometry.dispose();
+  trail.geometry = new THREE.BufferGeometry().setFromPoints(trailPts);
+}
+
+/* ===================== Cubos y física simple ===================== */
+function resetScene() {
+  S.cubes.forEach((c) => scene && scene.remove(c.mesh));
+  S.cubes = START_CUBES.map((c) => ({ ...c, h: 0 }));
+  if (scene) S.cubes.forEach((c) => {
+    c.mesh = new THREE.Mesh(new THREE.BoxGeometry(CUBE, CUBE, CUBE), new THREE.MeshStandardMaterial({ color: c.color, roughness: 0.6 }));
+    c.mesh.castShadow = c.mesh.receiveShadow = true; scene.add(c.mesh);
+  });
+  S.pos = { ...HOME }; S.theta = 0; S.pump = 0; S.valve = 0; S.grip = 0; S.held = null; S.free = false; S.rot = 0;
+  trailPts = []; if (trail) { trail.geometry.dispose(); trail.geometry = new THREE.BufferGeometry(); }
+  pose(); drawReach(); updateTags(); renderScene();
+}
+function suctionActive() { return S.tool === "suction" && S.pump > 0 && !S.valve; }
+function tryAttach() {
+  if (S.held) return;
+  const t = tip();
+  for (const c of S.cubes) {
+    const top = c.h + CUBE, dx = Math.abs(t.x - c.x), dy = Math.abs(t.y - c.y);
+    let ok = false;
+    if (S.tool === "suction") ok = dx <= 10 && dy <= 10 && Math.abs(t.h - top) <= 4;
+    else ok = dx <= 9 && dy <= 9 && t.h >= c.h + 3 && t.h <= top - 1;
+    if (ok && !isCovered(c)) { S.held = c; S.holdOff = { x: c.x - t.x, y: c.y - t.y, h: c.h - t.h }; info("  ↳ " + c.label + " agarrado"); updateTags(); return; }
+  }
+}
+function isCovered(c) { return S.cubes.some((o) => o !== c && Math.abs(o.x - c.x) < CUBE && Math.abs(o.y - c.y) < CUBE && Math.abs(o.h - (c.h + CUBE)) < 2); }
+function release() {
+  if (!S.held) return Promise.resolve();
+  const c = S.held; S.held = null; updateTags();
+  let floor = 0;
+  S.cubes.forEach((o) => { if (o !== c && Math.abs(o.x - c.x) < CUBE - 2 && Math.abs(o.y - c.y) < CUBE - 2 && o.h + CUBE <= c.h + 1) floor = Math.max(floor, o.h + CUBE); });
+  const from = c.h, dist = from - floor;
+  info("  ↳ " + c.label + (floor > 0 ? " soltado encima de otro cubo" : " soltado sobre la mesa"));
+  if (dist < 0.5) { c.h = floor; pose(); renderScene(); return Promise.resolve(); }
+  return new Promise((res) => {
+    const t0 = performance.now(), dur = Math.min(450, 80 + dist * 4);
+    const fall = () => {
+      const k = Math.min(1, (performance.now() - t0) / dur);
+      c.h = from - dist * k * k; pose();
+      if (k < 1) requestAnimationFrame(fall); else { renderScene(); res(); }
+    };
+    requestAnimationFrame(fall);
+  });
+}
+function collision() {
+  const t = tip();
+  if (t.h < -0.5) return "La herramienta choca con la mesa (Z = " + S.pos.z.toFixed(1) + "). Con " + TOOL[S.tool].name.toLowerCase() + " la mesa está en Z = " + (-TOOL[S.tool].T) + ".";
+  for (const c of S.cubes) {
+    if (c === S.held) continue;
+    const inside = Math.abs(t.x - c.x) < CUBE / 2 && Math.abs(t.y - c.y) < CUBE / 2 && t.h < c.h + CUBE - 1.5 && t.h > c.h - 40;
+    if (inside && (S.tool === "suction" || S.grip !== 1)) return "La " + TOOL[S.tool].name.toLowerCase() + " choca con el " + c.label.toLowerCase() + ". Para tocarlo por arriba usa Z = " + (c.h + CUBE - TOOL[S.tool].T) + (S.tool === "gripper" ? " o abre la pinza con robot.gripper(1)." : ".");
+  }
+  if (S.held) {
+    const c = S.held;
+    if (c.h < -0.5) return "El " + c.label.toLowerCase() + " choca con la mesa.";
+    for (const o of S.cubes) if (o !== c && Math.abs(o.x - c.x) < CUBE - 1 && Math.abs(o.y - c.y) < CUBE - 1 && c.h < o.h + CUBE - 1 && c.h + CUBE > o.h + 1) return "El " + c.label.toLowerCase() + " choca con el " + o.label.toLowerCase() + ".";
+  }
+  return null;
+}
+
+/* ===================== Movimiento ===================== */
+function pathPoint(a, b, k, mode) {
+  if (mode === "linear") return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k };
+  const ra = Math.hypot(a.x, a.y), rb = Math.hypot(b.x, b.y);
+  const ta = ra > 0.5 ? Math.atan2(a.x, a.y) : (rb > 0.5 ? Math.atan2(b.x, b.y) : 0);
+  const tb = rb > 0.5 ? Math.atan2(b.x, b.y) : ta;
+  const r = ra + (rb - ra) * k, t = ta + (tb - ta) * k;
+  return { x: r * Math.sin(t), y: r * Math.cos(t), z: a.z + (b.z - a.z) * k };
+}
+function fmt(v) { return Number.isInteger(v) ? String(v) : String(+v.toFixed(3)); }
+function moveTo(target, mode) {
+  const a = { ...S.pos }, b = target;
+  if (!checkXYZ(b.x, b.y, b.z)) {
+    showGhost(b);
+    throw new Error("No reachable: el brazo no puede llegar a (" + fmt(b.x) + ", " + fmt(b.y) + ", " + fmt(b.z) + "). Prueba un punto más cerca o a otra altura. Puedes comprobarlo antes con robot.checkXYZ(x, y, z).");
+  }
+  let len = 0, prev = a;
+  for (let i = 1; i <= 48; i++) {
+    const p = pathPoint(a, b, i / 48, mode);
+    if (!checkXYZ(p.x, p.y, p.z)) { showGhost(p); throw new Error("No reachable: el camino hasta (" + fmt(b.x) + ", " + fmt(b.y) + ", " + fmt(b.z) + ") pasa por (" + p.x.toFixed(0) + ", " + p.y.toFixed(0) + ", " + p.z.toFixed(0) + "), fuera del alcance del brazo. Agrega un punto intermedio" + (mode === "linear" ? " o usa moveG0 (arco)." : ".")); }
+    len += Math.hypot(p.x - prev.x, p.y - prev.y, p.z - prev.z); prev = p;
+  }
+  const dur = Math.max(220, (len / (150 * S.speed)) * 1000);
+  if (!renderer) { S.pos = { ...b }; pose(); return wait(dur); }
+  return new Promise((res, rej) => {
+    let t0 = null;
+    anim = {
+      step(t) {
+        if (t0 === null) t0 = t;
+        let k = Math.min(1, (t - t0) / dur);
+        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        S.pos = pathPoint(a, b, e, mode);
+        pose();
+        if (suctionActive()) tryAttach();
+        pushTrail();
+        const hit = collision();
+        if (hit) { anim = null; drawReach(); renderScene(); rej(new Error(hit)); return; }
+        if (k >= 1) { S.pos = { ...b }; pose(); anim = null; drawReach(); renderScene(); res(); }
+      },
+      cancel() { anim = null; rej(STOP); }
+    };
+  });
+}
+function showGhost(p) { if (!ghost) return; ghost.position.copy(w2t(p.x, p.y, p.z + TOOL[S.tool].T)); ghost.material.opacity = 0.9; ghost.visible = true; }
+function wait(ms) {
+  return new Promise((res, rej) => {
+    const id = setTimeout(res, ms);
+    waiters.add({ id, rej });
+  });
+}
+const waiters = new Set();
+function cancelAll() { if (anim) anim.cancel(); waiters.forEach((w) => { clearTimeout(w.id); w.rej(STOP); }); waiters.clear(); }
+
+/* ===================== Robot real por USB (Web Serial) ===================== */
+const Serial = {
+  port: null, writer: null, reader: null, buf: "", lines: [], wake: null, connected: false,
+  async connect() {
+    if (!("serial" in navigator)) throw new Error("Este navegador no permite conectar dispositivos USB desde una página. Usa Chrome o Edge en una computadora.");
+    let port;
+    try { port = await navigator.serial.requestPort(); }
+    catch (e) {
+      if (e && e.name === "NotFoundError") throw new Error("No elegiste ningún puerto.");
+      throw new Error("Esta vista no permite USB. Abre la página en su propia pestaña de Chrome o Edge (o usa el programa Huenit).");
+    }
+    await port.open({ baudRate: 115200 });
+    try { await port.setSignals({ requestToSend: false }); } catch (e) { /* algunos adaptadores no lo admiten */ }
+    this.port = port; this.writer = port.writable.getWriter();
+    this.readLoop();
+    await new Promise((r) => setTimeout(r, 1200));
+    this.lines = [];
+    this.connected = true;
+  },
+  async readLoop() {
+    const dec = new TextDecoder();
+    try {
+      this.reader = this.port.readable.getReader();
+      for (;;) {
+        const { value, done } = await this.reader.read();
+        if (done) break;
+        this.buf += dec.decode(value, { stream: true });
+        let i;
+        while ((i = this.buf.indexOf("\n")) >= 0) {
+          const line = this.buf.slice(0, i).replace(/\r$/, ""); this.buf = this.buf.slice(i + 1);
+          if (line.trim()) { this.lines.push(line); if (this.wake) this.wake(); }
+        }
+      }
+    } catch (e) { /* desconectado */ }
+    this.connected = false; setMode();
+  },
+  nextLine(ms) {
+    if (this.lines.length) return Promise.resolve(this.lines.shift());
+    return new Promise((res) => {
+      const id = setTimeout(() => { this.wake = null; res(null); }, ms);
+      this.wake = () => { clearTimeout(id); this.wake = null; res(this.lines.shift()); };
+    });
+  },
+  // Igual que sendCommand() de robot.py: envía y lee hasta "ok"
+  async send(cmd) {
+    this.lines = [];
+    await this.writer.write(new TextEncoder().encode(cmd + "\n"));
+    let info = "";
+    for (;;) {
+      if (stopFlag) throw STOP;
+      const line = await this.nextLine(60000);
+      if (line === null) throw new Error("El robot no respondió a " + cmd + ". Revisa el cable y que el robot esté encendido.");
+      if (line.indexOf("ok") > -1) return info;
+      if (line.indexOf("Unknown") > -1) throw new Error("El robot no reconoce el comando " + cmd);
+      info = line;
+    }
+  },
+  async disconnect() {
+    try { this.reader && await this.reader.cancel(); } catch (e) {}
+    try { this.writer && this.writer.releaseLock(); } catch (e) {}
+    try { await this.port.close(); } catch (e) {}
+    this.connected = false;
+  }
+};
+
+/* ===================== Funciones de la librería robot ===================== */
+// Cada función: los comandos G-code que envía robot.py y lo que hace la simulación.
+async function sendSeq(seq, line) {
+  // seq: lista de strings G-code o números (pausa en segundos, como time.sleep dentro de robot.py)
+  let last = "";
+  for (const s of seq) {
+    if (typeof s === "number") { await wait(Serial.connected ? s * 1000 : (s * 1000) / S.speed); continue; }
+    gcode(s, line);
+    if (Serial.connected) last = await Serial.send(s);
+  }
+  return last;
+}
+function xyzArgs(name, args) {
+  let v = args;
+  if (args.length === 1 && Array.isArray(args[0])) v = args[0];
+  if (v.length !== 3 || v.some((n) => typeof n !== "number" || !isFinite(n))) throw new TypeError(name + " necesita tres números: robot." + name + "(x, y, z)");
+  return { x: v[0], y: v[1], z: v[2] };
+}
+function num(name, v, what) { if (typeof v !== "number" || !isFinite(v)) throw new TypeError(name + ": " + what + " debe ser un número"); return v; }
+async function doMove(name, args, line, mode) {
+  const p = xyzArgs(name, args);
+  const g = (mode === "linear" ? "G1" : "G0") + " X" + fmt(p.x) + " Y" + fmt(p.y) + " Z" + fmt(p.z);
+  const sim = moveTo(p, mode); // valida antes de enviar nada al robot
+  await Promise.all([sim, sendSeq([g, "M400"], line)]);
+}
+async function setAir(seq, line) { await sendSeq(seq, line); }
+function airState(cmd) {
+  const m = cmd.match(/^M140([01])\s*A(\d+)/);
+  if (!m) return;
+  if (m[1] === "0") S.pump = +m[2]; else S.valve = +m[2];
+}
+async function airSeq(seq, line) {
+  // aplica a la simulación cada comando de bomba/válvula en orden
+  for (const s of seq) {
+    if (typeof s === "number") { await wait(Serial.connected ? s * 1000 : (s * 1000) / S.speed); continue; }
+    gcode(s, line);
+    if (Serial.connected) await Serial.send(s);
+    airState(s);
+  }
+  if (S.tool === "suction") {
+    if (suctionActive()) { await wait(250 / S.speed); tryAttach(); }
+    else if (S.held) await release();
+  }
+  updateTags();
+}
+const PUMP_ON = ["M1401 A0", "M1400 A1023"], PUMP_OFF = ["M1400 A0"], VALVE_ON = ["M1401 A1"], VALVE_OFF = ["M1401 A0"];
+const API = {
+  moveG0: (a, l) => doMove("moveG0", a, l, "arc"),
+  moveG1: (a, l) => doMove("moveG1", a, l, "linear"),
+  goHome: async (a, l) => { const sim = moveTo({ ...HOME }, "arc"); await Promise.all([sim, sendSeq(["M1008 A5"], l)]); },
+  moveZ0: async (a, l) => { const z = num("moveZ0", a[0], "z"); const sim = moveTo({ x: S.pos.x, y: S.pos.y, z }, "linear"); await Promise.all([sim, sendSeq(["G0 Z" + fmt(z)], l)]); },
+  moveZ0_M400: async (a, l) => { const z = num("moveZ0_M400", a[0], "z"); const sim = moveTo({ x: S.pos.x, y: S.pos.y, z }, "linear"); await Promise.all([sim, sendSeq(["G0 Z" + fmt(z), "M400"], l)]); },
+  suctionOn: (a, l) => { if (S.tool !== "suction") warnTool("suctionOn", "ventosa"); return airSeq([...VALVE_OFF, ...PUMP_ON], l); },
+  suctionOff: (a, l) => airSeq([...PUMP_OFF, ...VALVE_ON, 0.3, ...VALVE_OFF], l),
+  pumpOn: (a, l) => airSeq(PUMP_ON, l),
+  pumpOff: (a, l) => airSeq(PUMP_OFF, l),
+  pump: (a, l) => airSeq(["M1400 A" + fmt(num("pump", a[0], "la potencia"))], l),
+  valveOn: (a, l) => airSeq(VALVE_ON, l),
+  valveOff: (a, l) => airSeq(VALVE_OFF, l),
+  gripper: async (a, l) => {
+    const st = a[0];
+    if (st !== 0 && st !== 1 && st !== 2) throw new ValueError("gripper solo acepta 0 (reposo), 1 (abrir) o 2 (agarrar)");
+    if (S.tool !== "gripper") warnTool("gripper", "pinza");
+    if (st === 0) { await airSeq([...PUMP_OFF, ...VALVE_ON, 0.3, ...PUMP_OFF, ...VALVE_OFF], l); S.grip = 0; pose(); await release(); }
+    else if (st === 1) { await airSeq([...VALVE_OFF, "M1400 A1000"], l); S.grip = 1; pose(); await release(); }
+    else { await airSeq([...VALVE_ON, "M1400 A1000"], l); S.grip = 2; pose(); if (S.tool === "gripper") tryAttach(); await airSeq([3, "M1400 A300"], l); }
+    updateTags();
+  },
+  getLoc: async (a, l) => {
+    if (Serial.connected) { const info = await sendSeq(["M1008 A3"], l); return floats(info); }
+    gcode("M1008 A3", l);
+    return [S.pos.x, S.pos.y, S.pos.z].map((v) => Math.round(v * 100) / 100);
+  },
+  getDeg: async (a, l) => {
+    if (Serial.connected) { const info = await sendSeq(["M1008 A2"], l); return floats(info); }
+    gcode("M1008 A2", l);
+    const k = solve(S.pos);
+    return [S.theta, k.a, k.fore].map((v) => Math.round((v * 180) / Math.PI * 10) / 10);
+  },
+  checkXYZ: (a) => { const p = xyzArgs("checkXYZ", a); return checkXYZ(p.x, p.y, p.z); },
+  freeMod: async (a, l) => { await sendSeq(["M84"], l); S.free = true; info("  ↳ Motores apagados: en el robot real puedes mover el brazo con la mano."); },
+  unsetFreeMod: async (a, l) => { await sendSeq(["M17", "M1008 A1", "G90"], l); S.free = false; },
+  suctionAngle: async (a, l) => {
+    let ang = num("suctionAngle", a[0], "el ángulo"); const spd = a.length > 1 ? num("suctionAngle", a[1], "la velocidad") : 60;
+    ang = ((ang % 360) + 360) % 360;
+    if (ang >= 270) { out("Unsupported degree\n"); return; }
+    if (spd <= 0) { out("Unsupported speed\n"); return; }
+    await sendSeq(["M9996 A1B" + fmt(ang) + "C" + fmt(spd)], l);
+    const from = S.rot, dur = (Math.abs(ang - from) / Math.max(10, spd * 3)) * 1000 / S.speed;
+    await new Promise((res) => { const t0 = performance.now(); const f = () => { const k = Math.min(1, (performance.now() - t0) / Math.max(dur, 1)); S.rot = from + (ang - from) * k; pose(); if (k < 1) requestAnimationFrame(f); else res(); }; f(); });
+  },
+  moveAngle: async (a, l) => { await sendSeq(["M1005 A" + a[0] + " B" + a[1] + " C" + a[2], "M400"], l); warn("  ↳ moveAngle mueve los motores por ángulo. La simulación no lo dibuja; úsalo solo con el robot real."); },
+  move_conveyor: async (a, l) => { const d = a.length ? num("move_conveyor", a[0], "la distancia") : 43; await sendSeq(["M204 R5", "M203 E30", "G91", "G1 E" + fmt(d), "G90"], l); info("  ↳ Cinta transportadora: avanza " + fmt(d) + " mm (no se dibuja)."); },
+  sendCommand: async (a, l) => {
+    const cmd = String(a[0] == null ? "" : a[0]).replace(/\n+$/, "");
+    const m = cmd.match(/^G([01])\b(.*)$/i);
+    if (m) {
+      const get = (k) => { const r = m[2].match(new RegExp(k + "\\s*(-?[\\d.]+)", "i")); return r ? parseFloat(r[1]) : null; };
+      const p = { x: get("X") ?? S.pos.x, y: get("Y") ?? S.pos.y, z: get("Z") ?? S.pos.z };
+      const sim = moveTo(p, m[1] === "1" ? "linear" : "arc");
+      const [, info] = await Promise.all([sim, sendSeq([cmd], l)]);
+      return [true, "", info || ""];
+    }
+    if (/^M140[01]/.test(cmd)) { await airSeq([cmd], l); return [true, "", ""]; }
+    const info = await sendSeq([cmd], l);
+    if (!Serial.connected) warn("  ↳ La simulación no interpreta " + cmd.split(" ")[0] + "; en el robot real sí se envía.");
+    return [true, "", info || ""];
+  },
+  set_current_position: (a, l) => sendSeq(["M1500 B4"], l),
+  scan_ports: () => [],
+  checkConnection: () => Serial.connected
+};
+class ValueError extends Error {}
+function floats(text) { const m = String(text || "").match(/[-+]?\d*\.?\d+/g); return m ? m.map(Number) : []; }
+let toolWarned = {};
+function warnTool(fn, need) { if (toolWarned[fn]) return; toolWarned[fn] = true; warn("  ↳ " + fn + "() es para la " + need + ", pero la herramienta elegida es " + TOOL[S.tool].name.toLowerCase() + ". Cámbiala arriba del editor."); }
+
+/* ===================== Python (Skulpt) ===================== */
+const STOP = { stop: true };
+let stopFlag = false;
+const ROBOT_MODULE = "var $builtinmodule = function (name) { var mod = {}; var B = window.__huenit; B.names.forEach(function (n) { mod[n] = new Sk.builtin.func(function () { var args = Array.prototype.slice.call(arguments).map(function (a) { return Sk.ffi.remapToJs(a); }); var s = new Sk.misceval.Suspension(); s.data = { type: 'robot', op: n, args: args }; s.resume = function () { if (s.data.error) { throw s.data.error; } var r = s.data.result; if (Array.isArray(r) && r.length === 3 && typeof r[0] === 'boolean') { return new Sk.builtin.tuple(r.map(function (v) { return Sk.ffi.remapToPy(v); })); } return Sk.ffi.remapToPy(r === undefined ? null : r); }; return s; }); }); return mod; };";
+window.__huenit = { names: Object.keys(API) };
+const ALIASES = { robot_direct_control: true };
+
+function lineOf(s) { let ln = null; while (s) { if (s.$lineno !== undefined) ln = s.$lineno; s = s.child; } return ln; }
+function innermost(s) { while (s.child) s = s.child; return s; }
+
+async function run() {
+  if (S.running) return;
+  if (!window.Sk) { err("No se pudo cargar el intérprete de Python. Revisa tu conexión y recarga la página."); return; }
+  saveDraft();
+  S.running = true; stopFlag = false; toolWarned = {}; waiters.clear();
+  setRunning(true); clearMarks();
+  document.getElementById("log").innerHTML = "";
+  document.getElementById("gcodeLog").innerHTML = ""; S.gcodeN = 0; document.getElementById("gcodeCount").textContent = "0";
+  resetScene();
+  info(Serial.connected ? "Ejecutando en el robot real y en la simulación…" : "Ejecutando en la simulación…");
+  const code = cm.getValue();
+  if (Sk.sysmodules && Sk.builtin.dict) Sk.sysmodules = new Sk.builtin.dict([]);
+  Sk.configure({
+    output: (t) => out(t),
+    read: (f) => {
+      if (f === "src/lib/robot.js" || f === "src/lib/robot_direct_control.js") return ROBOT_MODULE;
+      if (Sk.builtinFiles && Sk.builtinFiles.files[f] !== undefined) return Sk.builtinFiles.files[f];
+      throw new Sk.builtin.ImportError("No existe el módulo " + f.replace(/^src\/lib\//, "").replace(/\.(js|py)$/, "").replace(/\/__init__$/, ""));
+    },
+    __future__: Sk.python3,
+    yieldLimit: 60,
+    execLimit: null
+  });
+  let curLine = null;
+  const handlers = {
+    robot: async (s) => {
+      const d = innermost(s); const ln = lineOf(s); curLine = ln; markRun(ln);
+      if (stopFlag) throw STOP;
+      try {
+        callLog(d.data.op, d.data.args, ln);
+        d.data.result = await API[d.data.op](d.data.args, ln);
+      } catch (e) {
+        if (e === STOP) throw e;
+        const msg = e && e.message ? e.message : String(e);
+        d.data.error = e instanceof TypeError ? new Sk.builtin.TypeError(msg) : e instanceof ValueError ? new Sk.builtin.ValueError(msg) : new Sk.builtin.RuntimeError(msg);
+      }
+      return s.resume();
+    },
+    "Sk.promise": async (s) => {
+      const d = innermost(s); const ln = lineOf(s); if (ln) markRun(ln);
+      try { d.data.result = await Promise.race([d.data.promise, new Promise((_, rej) => waiters.add({ id: null, rej }))]); }
+      catch (e) { if (e === STOP) throw e; d.data.error = e; }
+      return s.resume();
+    },
+    "Sk.yield": async (s) => { if (stopFlag) throw STOP; await new Promise((r) => setTimeout(r, 0)); return s.resume(); }
+  };
+  try {
+    await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true), handlers);
+    ok("✓ Programa terminado.");
+  } catch (e) {
+    if (e === STOP) warn("■ Programa detenido.");
+    else {
+      let ln = curLine;
+      if (e && e.traceback && e.traceback.length) ln = e.traceback[e.traceback.length - 1].lineno;
+      const name = e && e.tp$name ? e.tp$name : "Error";
+      let msg = e && e.args && e.args.v && e.args.v.length ? Sk.ffi.remapToJs(e.args.v[0]) : (e && e.message) || String(e);
+      msg = traducir(name, String(msg));
+      err((ln ? "Línea " + ln + ": " : "") + name + ": " + msg);
+      if (ln) markErr(ln);
+    }
+  } finally {
+    S.running = false; setRunning(false); clearRun();
+  }
+}
+function traducir(name, msg) {
+  if (name === "NameError") { const m = msg.match(/name '(.+)' is not defined/); if (m) return (m[1] === "robot" || m[1] === "time") ? "falta la línea import " + m[1] + " al principio del programa." : "no existe nada llamado '" + m[1] + "'. Revisa cómo está escrito o defínelo antes de usarlo."; }
+  if (name === "SyntaxError" || name === "ParseError") return msg + " (revisa paréntesis, dos puntos al final de for/if/def y comillas)";
+  if (name === "IndentationError") return msg + " (revisa los espacios al inicio de la línea)";
+  if (name === "AttributeError") { const m = msg.match(/has no attribute '(.+)'/); if (m) return "la librería no tiene la función '" + m[1] + "'. Mira la pestaña Funciones."; }
+  return msg;
+}
+function stop() { if (!S.running) return; stopFlag = true; cancelAll(); }
+
+/* ===================== Consola y G-code ===================== */
+const logEl = document.getElementById("log"), gEl = document.getElementById("gcodeLog");
+function append(el, cls, text) { const s = document.createElement("span"); if (cls) s.className = cls; s.textContent = text; el.appendChild(s); el.parentElement.scrollTop = el.parentElement.scrollHeight; }
+function out(t) { append(logEl, "", t); }
+function info(t) { append(logEl, "info", t + "\n"); }
+function warn(t) { append(logEl, "warn", t + "\n"); }
+function err(t) { append(logEl, "err", t + "\n"); showTab("console"); }
+function ok(t) { append(logEl, "ok", t + "\n"); }
+function callLog(op, args, ln) {
+  if (op === "checkXYZ") return;
+  const a = args.map((v) => Array.isArray(v) ? "(" + v.map(fmt).join(", ") + ")" : typeof v === "number" ? fmt(v) : JSON.stringify(v)).join(", ");
+  append(logEl, "info", (ln ? "L" + ln + "  " : "") + "robot." + op + "(" + a + ")\n");
+}
+function gcode(cmd, ln) {
+  S.gcodeN++; document.getElementById("gcodeCount").textContent = S.gcodeN;
+  const s = document.createElement("span");
+  const n = document.createElement("span"); n.className = "ln"; n.textContent = ln ? "L" + ln : ""; s.appendChild(n);
+  s.appendChild(document.createTextNode(cmd + "\n"));
+  gEl.appendChild(s); gEl.parentElement.scrollTop = gEl.parentElement.scrollHeight;
+}
+
+/* ===================== Interfaz ===================== */
+const EXAMPLES = [
+  { id: "saludo", name: "Saludo (asentir 3 veces)", tool: "suction", code:
+`import robot
+import time
+
+# El brazo saluda moviendo la "cabeza" arriba y abajo
+robot.goHome()
+
+for i in range(3):
+    robot.moveG0(0, 200, 80)   # arriba
+    robot.moveG0(0, 200, 20)   # abajo
+    print("Saludo", i + 1)
+
+robot.goHome()
+print("¡Hola!")
+` },
+  { id: "ventosa", name: "Ventosa: mover un cubo", tool: "suction", code:
+`import robot
+import time
+
+# Ejemplo oficial de Huenit: llevar el cubo rojo a la zona A
+# Ruta: A -> B -> A -> C -> D -> C
+
+robot.moveG0(-163, 245, 50)    # A: encima del cubo
+robot.moveG0(-163, 245, -35)   # B: tocar la cara de arriba
+robot.suctionOn()
+time.sleep(1)
+
+robot.moveG0(-163, 245, 50)    # A: subir con el cubo
+robot.moveG0(120, 250, 50)     # C: encima de la zona A
+robot.moveG0(120, 250, -35)    # D: bajar
+robot.suctionOff()
+time.sleep(1)
+
+robot.moveG0(120, 250, 50)     # C: subir
+` },
+  { id: "pinza", name: "Pinza: mover un cubo", tool: "gripper", code:
+`import robot
+import time
+
+# Ejemplo oficial de Huenit con la pinza blanda
+piso = -20          # Z de la mesa con la pinza puesta
+alto_cubo = 25      # el cubo mide 25 mm
+
+robot.moveG0(-150, 150, 70)
+robot.gripper(1)                                # abrir
+time.sleep(2)
+robot.moveG0(-150, 150, piso + alto_cubo - 10)  # 10 mm bajo la cara de arriba
+robot.gripper(2)                                # agarrar
+time.sleep(2)
+
+robot.moveG0(-150, 150, 70)
+robot.moveG0(150, 150, 70)                      # encima de la zona B
+robot.moveG0(150, 150, piso + alto_cubo - 10)
+robot.gripper(1)                                # soltar
+time.sleep(2)
+
+robot.moveG0(150, 150, 70)
+robot.gripper(0)                                # reposo
+` },
+  { id: "apilar", name: "Bucle: apilar dos cubos", tool: "suction", code:
+`import robot
+import time
+
+MESA = -60     # Z de la mesa con la ventosa
+CUBO = 25      # tamaño del cubo en mm
+SEGURO = 50    # altura para viajar sin chocar
+
+cubos = [(-163, 245), (40, 300)]   # rojo y amarillo
+destino = (120, 250)               # zona A
+
+robot.goHome()
+for i in range(len(cubos)):
+    x, y = cubos[i]
+    robot.moveG0(x, y, SEGURO)
+    robot.moveG0(x, y, MESA + CUBO)        # tocar la cara de arriba
+    robot.suctionOn()
+    time.sleep(1)
+    robot.moveG0(x, y, SEGURO)
+
+    altura = MESA + CUBO * (i + 1)         # cada cubo va 25 mm más arriba
+    robot.moveG0(destino[0], destino[1], SEGURO)
+    robot.moveG0(destino[0], destino[1], altura)
+    robot.suctionOff()
+    time.sleep(1)
+    robot.moveG0(destino[0], destino[1], SEGURO)
+    print("Cubo", i + 1, "apilado a Z =", altura)
+
+robot.goHome()
+` },
+  { id: "alcance", name: "Explorar el alcance", tool: "suction", code:
+`import robot
+
+# checkXYZ(x, y, z) devuelve 1 si el brazo puede llegar y 0 si no
+for z in [0, 50, 100, 150]:
+    fila = ""
+    for y in range(100, 351, 50):
+        if robot.checkXYZ(0, y, z):
+            fila = fila + " si "
+        else:
+            fila = fila + " -- "
+    print("Z =", z, " Y de 100 a 350:", fila)
+
+# Prueba: ¿qué pasa si pedimos un punto imposible?
+robot.moveG0(0, 180, 150)
+` }
+];
+const DEFAULT = EXAMPLES[1];
+const exSel = document.getElementById("exampleSel");
+EXAMPLES.forEach((e) => { const o = document.createElement("option"); o.value = e.id; o.textContent = e.name; exSel.appendChild(o); });
+
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+let cm;
+const ta = document.getElementById("code");
+const draft = store("huenit-sim-code");
+const savedTool = store("huenit-sim-tool");
+ta.value = draft || DEFAULT.code;
+if (savedTool && TOOL[savedTool]) S.tool = savedTool;
+document.getElementById("toolSel").value = S.tool;
+if (window.CodeMirror) {
+  cm = CodeMirror.fromTextArea(ta, { mode: "python", lineNumbers: true, indentUnit: 4, tabSize: 4, indentWithTabs: false, matchBrackets: true,
+    extraKeys: { Tab: (c) => c.somethingSelected() ? c.indentSelection("add") : c.replaceSelection("    "), "Ctrl-Enter": () => run(), "Cmd-Enter": () => run(), "Shift-Tab": (c) => c.indentSelection("subtract") } });
+} else {
+  cm = { getValue: () => ta.value, setValue: (v) => { ta.value = v; }, on: (ev, f) => ta.addEventListener("input", f), addLineClass() {}, removeLineClass() {}, scrollIntoView() {}, lineCount: () => 0 };
+  ta.style.cssText = "width:100%;height:420px;font-family:var(--font-mono);border:0;padding:10px;background:var(--panel);color:var(--ink)";
+}
+let saveT;
+cm.on("change", () => { clearTimeout(saveT); saveT = setTimeout(saveDraft, 400); clearErr(); });
+function saveDraft() { store("huenit-sim-code", cm.getValue()); }
+
+let prevCode = null;
+exSel.addEventListener("change", () => {
+  const ex = EXAMPLES.find((e) => e.id === exSel.value);
+  if (!ex) return;
+  prevCode = cm.getValue();
+  cm.setValue(ex.code);
+  setTool(ex.tool);
+  document.getElementById("exampleNoticeText").textContent = "Se cargó el ejemplo «" + ex.name + "».";
+  document.getElementById("exampleNotice").hidden = false;
+  exSel.value = "";
+});
+document.getElementById("restoreBtn").addEventListener("click", () => {
+  if (prevCode !== null) cm.setValue(prevCode);
+  document.getElementById("exampleNotice").hidden = true;
+});
+function setTool(t) {
+  if (S.running) return;
+  S.tool = t; document.getElementById("toolSel").value = t; store("huenit-sim-tool", t);
+  S.held = null; S.pump = 0; S.valve = 0; S.grip = 0;
+  pose(); updateTags(); renderScene();
+}
+document.getElementById("toolSel").addEventListener("change", (e) => setTool(e.target.value));
+document.getElementById("speedSel").addEventListener("change", (e) => { S.speed = parseFloat(e.target.value); });
+document.getElementById("runBtn").addEventListener("click", run);
+document.getElementById("stopBtn").addEventListener("click", stop);
+document.getElementById("resetBtn").addEventListener("click", () => { if (!S.running) { resetScene(); clearMarks(); } });
+
+function setRunning(r) {
+  document.getElementById("runBtn").disabled = r;
+  document.getElementById("stopBtn").disabled = !r;
+  document.getElementById("resetBtn").disabled = r;
+  document.getElementById("toolSel").disabled = r;
+  document.getElementById("serialBtn").disabled = r;
+}
+let runMark = null, errMark = null;
+function markRun(ln) { if (!ln || !cm.addLineClass) return; clearRun(); runMark = cm.addLineClass(ln - 1, "background", "run-line"); cm.scrollIntoView({ line: ln - 1, ch: 0 }, 60); }
+function clearRun() { if (runMark && cm.removeLineClass) cm.removeLineClass(runMark, "background", "run-line"); runMark = null; }
+function markErr(ln) { if (!cm.addLineClass || ln > cm.lineCount()) return; clearErr(); errMark = cm.addLineClass(ln - 1, "background", "err-line"); cm.scrollIntoView({ line: ln - 1, ch: 0 }, 60); }
+function clearErr() { if (errMark && cm.removeLineClass) cm.removeLineClass(errMark, "background", "err-line"); errMark = null; }
+function clearMarks() { clearRun(); clearErr(); }
+
+function updateTags() {
+  const tt = document.getElementById("tagTool");
+  const active = S.tool === "suction" ? suctionActive() : S.grip === 2;
+  tt.textContent = TOOL[S.tool].name + (S.tool === "suction" ? (active ? " · encendida" : " · apagada") : [" · reposo", " · abierta", " · cerrada"][S.grip]);
+  tt.classList.toggle("on", active);
+  const th = document.getElementById("tagHold");
+  th.hidden = !S.held; if (S.held) { th.textContent = "Sujetando " + S.held.label.toLowerCase(); th.classList.add("on"); }
+}
+function renderScene() {
+  const el = document.getElementById("sceneList"); if (!el) return;
+  el.innerHTML = "";
+  const T = TOOL[S.tool].T;
+  S.cubes.forEach((c) => {
+    const d = document.createElement("div"); d.className = "obj";
+    const sw = document.createElement("span"); sw.className = "sw"; sw.style.background = c.css; d.appendChild(sw);
+    const b = document.createElement("div");
+    const t = document.createElement("div"); t.className = "t"; t.textContent = c.label + (c === S.held ? " (sujeto)" : ""); b.appendChild(t);
+    const m = document.createElement("div"); m.className = "m";
+    const zTop = c.h + CUBE - T - (S.tool === "gripper" ? 10 : 0);
+    m.textContent = "X " + c.x.toFixed(0) + " · Y " + c.y.toFixed(0) + " · " + (S.tool === "gripper" ? "agarrar en Z " : "tocar arriba Z ") + zTop.toFixed(0);
+    b.appendChild(m); d.appendChild(b); el.appendChild(d);
+  });
+  PADS.forEach((p) => {
+    const d = document.createElement("div"); d.className = "obj";
+    const sw = document.createElement("span"); sw.className = "sw"; sw.style.border = "2px solid var(--accent)"; d.appendChild(sw);
+    const b = document.createElement("div");
+    const t = document.createElement("div"); t.className = "t"; t.textContent = "Zona " + p.id; b.appendChild(t);
+    const m = document.createElement("div"); m.className = "m"; m.textContent = "X " + p.x + " · Y " + p.y + " · mesa Z " + (-T); b.appendChild(m);
+    d.appendChild(b); el.appendChild(d);
+  });
+}
+
+function showTab(id) {
+  document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === id)));
+  ["console", "gcode", "scene", "ref"].forEach((p) => { document.getElementById("pane-" + p).hidden = p !== id; });
+}
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => showTab(t.dataset.tab)));
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const st = document.getElementById("copyStatus"), code = cm.getValue();
+  const done = () => { st.className = "status-line ok"; st.textContent = "Copiado. Pégalo en el programa Huenit."; };
+  try {
+    navigator.clipboard.writeText(code).then(done, () => { fallbackCopy(code) ? done() : (st.className = "status-line err", st.textContent = "No se pudo copiar. Selecciona el código en el editor y usa Ctrl+C."); });
+  } catch (e) { fallbackCopy(code) ? done() : (st.className = "status-line err", st.textContent = "No se pudo copiar. Selecciona el código en el editor y usa Ctrl+C."); }
+});
+function fallbackCopy(text) {
+  const t = document.createElement("textarea"); t.value = text; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select();
+  let okc = false; try { okc = document.execCommand("copy"); } catch (e) {} t.remove(); return okc;
+}
+function setMode() {
+  const chip = document.getElementById("modeChip");
+  chip.classList.toggle("live", Serial.connected);
+  document.getElementById("modeText").textContent = Serial.connected ? "Robot conectado" : "Simulación";
+  document.getElementById("serialBtn").textContent = Serial.connected ? "Desconectar robot" : "Conectar robot";
+  document.getElementById("serialBtn").classList.toggle("primary", !Serial.connected);
+}
+document.getElementById("serialBtn").addEventListener("click", async () => {
+  const st = document.getElementById("serialStatus");
+  if (Serial.connected) { await Serial.disconnect(); setMode(); st.className = "status-line"; st.textContent = "Robot desconectado. Ejecutar vuelve a usar solo la simulación."; return; }
+  st.className = "status-line"; st.textContent = "Elige el puerto del brazo (suele llamarse FTDI o USB Serial)…";
+  try {
+    await Serial.connect();
+    setMode(); st.className = "status-line ok"; st.textContent = "Conectado. Ahora Ejecutar mueve el robot real.";
+  } catch (e) { st.className = "status-line err"; st.textContent = e.message || String(e); }
+});
+
+initScene();
+resetScene();
+setMode();
+})();
+</script>
+
+</body>
+</html>
