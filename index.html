@@ -241,6 +241,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
             <option value="suction">Ventosa (succión)</option>
             <option value="gripper">Pinza blanda</option>
             <option value="pen">Portabolígrafos (dibujo)</option>
+            <option value="laser">Láser (grabado)</option>
           </select>
         </div>
         <p class="notice" id="exampleNotice" hidden><span id="exampleNoticeText"></span><button class="linkbtn" id="restoreBtn" type="button">Recuperar mi código</button></p>
@@ -353,6 +354,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
             <tr><td>robot.gripper(modo)</td><td>Pinza: 0 = reposo, 1 = abrir, 2 = agarrar (tarda unos 3 s).</td></tr>
             <tr><td>robot.suctionAngle(grados, velocidad)</td><td>Gira la ventosa (módulo giratorio). De 0 a 269 grados.</td></tr>
             <tr><td>Portabolígrafos</td><td>Elige la herramienta «Pluma»: cuando la punta toca la mesa, el brazo dibuja. Con <code>moveG1</code> traza líneas rectas; al subir la Z levanta la pluma.</td></tr>
+            <tr><td>robot.laserOn() / robot.laserOff()</td><td>Enciende o apaga el láser (herramienta «Láser»). Al pasar por la altura focal deja la marca de grabado. En el robot real quema de verdad: mismo cuidado que el modo láser del programa Huenit. En la consola G-code equivale a <code>M3</code> / <code>M5</code>.</td></tr>
             <tr class="group"><td colspan="2">Otras</td></tr>
             <tr><td>time.sleep(segundos)</td><td>Espera. Necesita <code>import time</code>.</td></tr>
             <tr><td>robot.getDeg()</td><td>Ángulos de los motores. En la simulación es aproximado.</td></tr>
@@ -431,7 +433,8 @@ const G = { flange: 110, shoulder: 135, L1: 160, L2: 160, reachA: 60, wristUp: 2
 const TOOL = {
   suction: { name: "Ventosa", T: 60 },
   gripper: { name: "Pinza", T: 20 },
-  pen: { name: "Pluma", T: 50 } // T aproximado: en el programa Huenit la profundidad de dibujo es configurable
+  pen: { name: "Pluma", T: 50 }, // T aproximado: en el programa Huenit la profundidad de dibujo es configurable
+  laser: { name: "Láser", T: 45 } // T aproximado: distancia focal del módulo láser
 };
 const HOME = { x: 0, y: 180, z: 0 };
 const CUBE = 25;
@@ -448,7 +451,7 @@ const PADS = [
 ];
 const S = {
   pos: { ...HOME }, theta: 0, tool: "suction", pump: 0, valve: 0, grip: 0, held: null, holdOff: null,
-  free: false, rot: 0, cubes: [], running: false, speed: 1, gcodeN: 0, jogStep: 5, jogSpeed: 100
+  free: false, rot: 0, cubes: [], running: false, speed: 1, gcodeN: 0, jogStep: 5, jogSpeed: 100, laser: false
 };
 
 /* ===================== Escena 3D ===================== */
@@ -587,6 +590,17 @@ function buildRobot() {
   const nib = new THREE.Mesh(new THREE.ConeGeometry(4.5, 8, 16), new THREE.MeshStandardMaterial({ color: 0xe9e4d0, roughness: 0.7 }));
   nib.rotation.x = Math.PI; nib.position.y = -pLen + 4; pen.add(nib);
   parts.pen = pen;
+  const laser = new THREE.Group(); toolG.add(laser);
+  const lLen = G.flange - TOOL.laser.T;
+  const lbody = shadow(new THREE.Mesh(new THREE.CylinderGeometry(14, 16, 30, 24), dark)); lbody.position.y = -15; laser.add(lbody);
+  const lband = shadow(new THREE.Mesh(new THREE.CylinderGeometry(16, 16, 8, 24), grey)); lband.position.y = -32; laser.add(lband);
+  const llens = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 3, 20), new THREE.MeshStandardMaterial({ color: 0xd6336c, roughness: 0.3 }));
+  llens.position.y = -lLen + 2; laser.add(llens);
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(4, 1, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
+  laser.add(beam); parts.beam = beam;
+  const lspot = new THREE.Mesh(new THREE.CircleGeometry(5, 20), new THREE.MeshBasicMaterial({ color: 0xff5533, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false }));
+  lspot.rotation.x = -Math.PI / 2; laser.add(lspot); parts.lspot = lspot;
+  parts.laser = laser;
   parts.turret = turret;
 }
 
@@ -622,6 +636,18 @@ function pose() {
   parts.suction.visible = S.tool === "suction";
   parts.gripper.visible = S.tool === "gripper";
   if (parts.pen) parts.pen.visible = S.tool === "pen";
+  if (parts.laser) {
+    parts.laser.visible = S.tool === "laser";
+    const show = S.tool === "laser" && S.laser;
+    parts.beam.visible = show;
+    parts.lspot.visible = show;
+    if (show) {
+      const h = Math.max(tip().h, 0.5); // longitud del haz: de la cabeza a la mesa
+      parts.beam.scale.y = h;
+      parts.beam.position.y = -(G.flange - TOOL.laser.T) - h / 2;
+      parts.lspot.position.y = -k.h;
+    }
+  }
   const open = S.grip === 1 ? 0.32 : S.grip === 2 ? -0.05 : 0.1;
   parts.fingers.forEach((f) => { f.pivot.rotation.x = -f.s * open; });
   // cubo sujeto
@@ -686,14 +712,16 @@ function pushTrail() {
   trail.geometry = new THREE.BufferGeometry().setFromPoints(trailPts);
 }
 
-/* ===================== Trazos de la pluma (dibujo) ===================== */
+/* ===================== Trazos: tinta de la pluma y grabado del láser ===================== */
 let strokesGroup = null, curStroke = null, wasTouching = false;
 const INK = 0x1971c2;
+const BURN = 0xd9480f;
 function penTouching() { return S.tool === "pen" && tip().h <= 0.6; }
 function addStrokeMesh(pts) {
   if (!window.THREE || !scene) return;
   if (!strokesGroup) { strokesGroup = new THREE.Group(); scene.add(strokesGroup); }
-  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: INK }));
+  const color = S.tool === "laser" ? BURN : INK;
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color }));
   line.userData.pts = pts;
   strokesGroup.add(line);
 }
@@ -703,12 +731,16 @@ function updateStrokeMesh(pts) {
   if (line) { line.geometry.dispose(); line.geometry = new THREE.BufferGeometry().setFromPoints(pts); }
 }
 function penTrack() {
-  if (!penTouching()) {
+  const isPen = S.tool === "pen", isLaser = S.tool === "laser";
+  if (!isPen && !isLaser) {
     curStroke = null;
-    if (S.tool === "pen" && wasTouching) { wasTouching = false; updateTags(); }
+    if (wasTouching) { wasTouching = false; updateTags(); }
     return;
   }
-  if (!wasTouching) { wasTouching = true; updateTags(); }
+  // El láser solo marca cuando está encendido; la pluma, al apoyarse
+  const touching = tip().h <= 0.6 && (isPen || S.laser);
+  if (touching !== wasTouching) { wasTouching = touching; updateTags(); }
+  if (!touching) { curStroke = null; return; }
   const p = w2t(S.pos.x, S.pos.y, 0.6); // 0.6 mm sobre la mesa, para que no parpadee
   if (!curStroke) { curStroke = [p]; addStrokeMesh(curStroke); return; }
   if (curStroke[curStroke.length - 1].distanceTo(p) > 0.8) { curStroke.push(p); updateStrokeMesh(curStroke); }
@@ -728,7 +760,7 @@ function resetScene() {
     c.mesh = new THREE.Mesh(new THREE.BoxGeometry(CUBE, CUBE, CUBE), new THREE.MeshStandardMaterial({ color: c.color, roughness: 0.6 }));
     c.mesh.castShadow = c.mesh.receiveShadow = true; scene.add(c.mesh);
   });
-  S.pos = { ...HOME }; S.theta = 0; S.pump = 0; S.valve = 0; S.grip = 0; S.held = null; S.free = false; S.rot = 0;
+  S.pos = { ...HOME }; S.theta = 0; S.pump = 0; S.valve = 0; S.grip = 0; S.held = null; S.free = false; S.rot = 0; S.laser = false;
   trailPts = []; if (trail) { trail.geometry.dispose(); trail.geometry = new THREE.BufferGeometry(); }
   clearStrokes();
   pose(); drawReach(); updateTags(); renderScene();
@@ -767,19 +799,21 @@ function release() {
 function collision() {
   const t = tip();
   if (t.h < -0.5) {
-    // Con la pluma, apoyarla un poco es dibujar; hundirla de más es error
-    if (S.tool !== "pen" || t.h < -2)
-      return S.tool === "pen"
-        ? "Has hundido la pluma en la mesa (Z = " + S.pos.z.toFixed(1) + "). Con la pluma la mesa está en Z = " + (-TOOL[S.tool].T) + "."
+    // Con pluma o láser, apoyarlo un poco es dibujar/grabar; hundirlo de más es error
+    const marking = S.tool === "pen" || S.tool === "laser";
+    if (!marking || t.h < -2)
+      return marking
+        ? "Has hundido " + (S.tool === "pen" ? "la pluma" : "el láser") + " en la mesa (Z = " + S.pos.z.toFixed(1) + "). Con " + TOOL[S.tool].name.toLowerCase() + " la mesa está en Z = " + (-TOOL[S.tool].T) + "."
         : "La herramienta choca con la mesa (Z = " + S.pos.z.toFixed(1) + "). Con " + TOOL[S.tool].name.toLowerCase() + " la mesa está en Z = " + (-TOOL[S.tool].T) + ".";
   }
   for (const c of S.cubes) {
     if (c === S.held) continue;
     const inside = Math.abs(t.x - c.x) < CUBE / 2 && Math.abs(t.y - c.y) < CUBE / 2 && t.h < c.h + CUBE - 1.5 && t.h > c.h - 40;
-    if (inside && (S.tool === "suction" || S.grip !== 1))
-      return S.tool === "pen"
-        ? "La pluma choca con el " + c.label.toLowerCase() + ". Dibuja en la mesa o sube la Z por encima de " + (c.h + CUBE - TOOL[S.tool].T) + " para pasar por encima."
-        : "La " + TOOL[S.tool].name.toLowerCase() + " choca con el " + c.label.toLowerCase() + ". Para tocarlo por arriba usa Z = " + (c.h + CUBE - TOOL[S.tool].T) + (S.tool === "gripper" ? " o abre la pinza con robot.gripper(1)." : ".");
+    if (inside && (S.tool === "suction" || S.grip !== 1)) {
+      if (S.tool === "pen") return "La pluma choca con el " + c.label.toLowerCase() + ". Dibuja en la mesa o sube la Z por encima de " + (c.h + CUBE - TOOL[S.tool].T) + " para pasar por encima.";
+      if (S.tool === "laser") return "El láser apunta al " + c.label.toLowerCase() + ". Graba en la mesa o sube la Z por encima de " + (c.h + CUBE - TOOL[S.tool].T) + " para pasar por encima.";
+      return "La " + TOOL[S.tool].name.toLowerCase() + " choca con el " + c.label.toLowerCase() + ". Para tocarlo por arriba usa Z = " + (c.h + CUBE - TOOL[S.tool].T) + (S.tool === "gripper" ? " o abre la pinza con robot.gripper(1)." : ".");
+    }
   }
   if (S.held) {
     const c = S.held;
@@ -960,7 +994,7 @@ const API = {
   goHome: async (a, l) => { const sim = moveTo({ ...HOME }, "arc"); await Promise.all([sim, sendSeq(["M1008 A5"], l)]); },
   moveZ0: async (a, l) => { const z = num("moveZ0", a[0], "z"); const sim = moveTo({ x: S.pos.x, y: S.pos.y, z }, "linear"); await Promise.all([sim, sendSeq(["G0 Z" + fmt(z)], l)]); },
   moveZ0_M400: async (a, l) => { const z = num("moveZ0_M400", a[0], "z"); const sim = moveTo({ x: S.pos.x, y: S.pos.y, z }, "linear"); await Promise.all([sim, sendSeq(["G0 Z" + fmt(z), "M400"], l)]); },
-  suctionOn: (a, l) => { if (S.tool !== "suction") warnTool("suctionOn", "ventosa"); return airSeq([...VALVE_OFF, ...PUMP_ON], l); },
+  suctionOn: (a, l) => { if (S.tool !== "suction") warnTool("suctionOn", "la ventosa"); return airSeq([...VALVE_OFF, ...PUMP_ON], l); },
   suctionOff: (a, l) => airSeq([...PUMP_OFF, ...VALVE_ON, 0.3, ...VALVE_OFF], l),
   pumpOn: (a, l) => airSeq(PUMP_ON, l),
   pumpOff: (a, l) => airSeq(PUMP_OFF, l),
@@ -970,7 +1004,7 @@ const API = {
   gripper: async (a, l) => {
     const st = a[0];
     if (st !== 0 && st !== 1 && st !== 2) throw new ValueError("gripper solo acepta 0 (reposo), 1 (abrir) o 2 (agarrar)");
-    if (S.tool !== "gripper") warnTool("gripper", "pinza");
+    if (S.tool !== "gripper") warnTool("gripper", "la pinza");
     if (st === 0) { await airSeq([...PUMP_OFF, ...VALVE_ON, 0.3, ...PUMP_OFF, ...VALVE_OFF], l); S.grip = 0; pose(); await release(); }
     else if (st === 1) { await airSeq([...VALVE_OFF, "M1400 A1000"], l); S.grip = 1; pose(); await release(); }
     else { await airSeq([...VALVE_ON, "M1400 A1000"], l); S.grip = 2; pose(); if (S.tool === "gripper") tryAttach(); await airSeq([3, "M1400 A300"], l); }
@@ -1001,6 +1035,13 @@ const API = {
   },
   moveAngle: async (a, l) => { await sendSeq(["M1005 A" + a[0] + " B" + a[1] + " C" + a[2], "M400"], l); warn("  ↳ moveAngle mueve los motores por ángulo. La simulación no lo dibuja; úsalo solo con el robot real."); },
   move_conveyor: async (a, l) => { const d = a.length ? num("move_conveyor", a[0], "la distancia") : 43; await sendSeq(["M204 R5", "M203 E30", "G91", "G1 E" + fmt(d), "G90"], l); info("  ↳ Cinta transportadora: avanza " + fmt(d) + " mm (no se dibuja)."); },
+  laserOn: async (a, l) => {
+    if (S.tool !== "laser") warnTool("laserOn", "el láser");
+    await sendSeq(["M3"], l);
+    S.laser = true; pose(); updateTags();
+    info("  ↳ Láser encendido (M3). En el robot real quema de verdad: mismo cuidado que en el modo láser del programa Huenit.");
+  },
+  laserOff: async (a, l) => { await sendSeq(["M5"], l); S.laser = false; pose(); updateTags(); },
   sendCommand: async (a, l) => {
     const cmd = String(a[0] == null ? "" : a[0]).replace(/\n+$/, "");
     const m = cmd.match(/^G([01])\b(.*)$/i);
@@ -1023,7 +1064,7 @@ const API = {
 class ValueError extends Error {}
 function floats(text) { const m = String(text || "").match(/[-+]?\d*\.?\d+/g); return m ? m.map(Number) : []; }
 let toolWarned = {};
-function warnTool(fn, need) { if (toolWarned[fn]) return; toolWarned[fn] = true; warn("  ↳ " + fn + "() es para la " + need + ", pero la herramienta elegida es " + TOOL[S.tool].name.toLowerCase() + ". Cámbiala arriba del editor."); }
+function warnTool(fn, need) { if (toolWarned[fn]) return; toolWarned[fn] = true; warn("  ↳ " + fn + "() es para " + need + ", pero la herramienta elegida es " + TOOL[S.tool].name.toLowerCase() + ". Cámbiala arriba del editor."); }
 
 /* ===================== Python (Skulpt) ===================== */
 const STOP = { stop: true };
@@ -1206,6 +1247,14 @@ async function execGcodeCmd(raw) {
       if (inf) echoG("← " + inf, "info");
       return;
     }
+    const ml = cmd.match(/^M([35])\b/i);
+    if (ml) {
+      if (Serial.connected) await Serial.send(cmd);
+      S.laser = ml[1] === "3";
+      pose(); updateTags();
+      if (S.tool !== "laser") echoG("ℹ El láser está " + (S.laser ? "encendido" : "apagado") + " en la simulación; elige el módulo «Láser» para ver el haz.", "warn");
+      return;
+    }
     if (/^M140[01]\s*A/i.test(cmd)) {
       if (Serial.connected) await Serial.send(cmd);
       airState(cmd);
@@ -1236,7 +1285,9 @@ const EFFECTS = {
   suctionOff: "Ventosa: soltar",
   gripOpen: "Pinza: abrir",
   gripClose: "Pinza: agarrar",
-  gripIdle: "Pinza: reposo"
+  gripIdle: "Pinza: reposo",
+  laserOn: "Láser: encender",
+  laserOff: "Láser: apagar"
 };
 const macro = { steps: [], busy: false, playIdx: null };
 function loadMacro() {
@@ -1300,6 +1351,8 @@ async function playStep(st) {
   else if (st.effect === "gripOpen") await API.gripper([1], null);
   else if (st.effect === "gripClose") await API.gripper([2], null);
   else if (st.effect === "gripIdle") await API.gripper([0], null);
+  else if (st.effect === "laserOn") await API.laserOn([], null);
+  else if (st.effect === "laserOff") await API.laserOff([], null);
   if (st.t > 0) await wait(Serial.connected ? st.t * 1000 : (st.t * 1000) / S.speed);
 }
 async function playMacro() {
@@ -1328,7 +1381,9 @@ const MACRO_GCODE_EFFECT = {
   suctionOff: ["M1400 A0", "M1401 A1", "G4 P300", "M1401 A0"],
   gripOpen: ["M1401 A0", "M1400 A1000"],
   gripClose: ["M1401 A1", "M1400 A1000", "G4 P3000", "M1400 A300"],
-  gripIdle: ["M1400 A0", "M1401 A1", "G4 P300", "M1400 A0", "M1401 A0"]
+  gripIdle: ["M1400 A0", "M1401 A1", "G4 P300", "M1400 A0", "M1401 A0"],
+  laserOn: ["M3"],
+  laserOff: ["M5"]
 };
 function macroGcode() {
   const lines = [];
@@ -1468,6 +1523,29 @@ robot.moveG1(-110, 240, MESA)   # lado 4: cierra el cuadrado
 robot.moveG0(-110, 240, ALTO)   # levantar la pluma
 robot.goHome()
 print("¡Cuadrado dibujado!")
+` },
+  { id: "laser", name: "Láser: grabar un cuadrado", tool: "laser", code:
+`import robot
+
+# Graba un cuadrado de 60 mm con el módulo láser
+# OJO: en el robot real el láser quema de verdad. Mismo cuidado que en el
+# modo láser del programa Huenit: nunca lo apuntes a nadie y vigila la potencia.
+MESA = -45    # Z de la mesa con el láser (valor aproximado: mide el de tu robot)
+ALTO = -25    # Z para desplazarse sin grabar
+
+robot.moveG0(-100, 260, ALTO)   # encima de la primera esquina
+robot.laserOn()                 # encender el láser
+
+robot.moveG0(-100, 260, MESA)   # bajar a la altura focal: empieza a grabar
+robot.moveG1(-40, 260, MESA)
+robot.moveG1(-40, 320, MESA)
+robot.moveG1(-100, 320, MESA)
+robot.moveG1(-100, 260, MESA)
+
+robot.moveG0(-100, 260, ALTO)   # subir
+robot.laserOff()                # apagar el láser
+robot.goHome()
+print("¡Cuadrado grabado!")
 ` }
 ];
 const DEFAULT = EXAMPLES[1];
@@ -1511,7 +1589,7 @@ document.getElementById("restoreBtn").addEventListener("click", () => {
 function setTool(t) {
   if (S.running) return;
   S.tool = t; document.getElementById("toolSel").value = t; store("huenit-sim-tool", t);
-  S.held = null; S.pump = 0; S.valve = 0; S.grip = 0;
+  S.held = null; S.pump = 0; S.valve = 0; S.grip = 0; S.laser = false;
   pose(); updateTags(); renderScene();
 }
 document.getElementById("toolSel").addEventListener("change", (e) => setTool(e.target.value));
@@ -1629,6 +1707,7 @@ function updateTags() {
   const tt = document.getElementById("tagTool");
   let active, label;
   if (S.tool === "pen") { active = penTouching(); label = "Pluma" + (active ? " · dibujando" : " · arriba"); }
+  else if (S.tool === "laser") { active = S.laser; label = "Láser" + (active ? " · encendido" : " · apagado"); }
   else if (S.tool === "suction") { active = suctionActive(); label = "Ventosa" + (active ? " · encendida" : " · apagada"); }
   else { active = S.grip === 2; label = "Pinza" + [" · reposo", " · abierta", " · cerrada"][S.grip]; }
   tt.textContent = label;

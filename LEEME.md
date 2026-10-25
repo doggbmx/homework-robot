@@ -9,7 +9,7 @@ simulador sin el robot y después lo ejecutan igual en el brazo real.
 | Archivo | Para qué sirve |
 |---|---|
 | `index.html` | El simulador completo. Ábrelo con doble clic en Chrome o Edge. |
-| `ejemplos/` | Los seis ejemplos del simulador como archivos `.py`. |
+| `ejemplos/` | Los siete ejemplos del simulador como archivos `.py`. |
 | `referencia/robot.py` | La librería oficial que trae el programa Huenit (sacada de `resources/robot_blocks`). Solo como referencia: muestra qué comandos envía cada función. |
 
 ## Usarlo
@@ -17,7 +17,7 @@ simulador sin el robot y después lo ejecutan igual en el brazo real.
 1. Abre `index.html` en Chrome o Edge. Necesita internet la primera vez, porque
    carga el intérprete de Python (Skulpt), el motor 3D (Three.js) y el editor
    (CodeMirror) desde CDN.
-2. Escribe el código, elige la herramienta (ventosa, pinza o pluma) y pulsa **Ejecutar**
+2. Escribe el código, elige la herramienta (ventosa, pinza, pluma o láser) y pulsa **Ejecutar**
    (o Ctrl+Enter).
 3. El código se guarda solo en el navegador de cada alumno.
 
@@ -53,6 +53,12 @@ Además de ejecutar programas de Python, la página permite manejar el brazo a m
   cuadrado de 100 mm con `moveG1`. Su Z de mesa (≈ −50) es aproximada: mide
   la de tu robot, porque en el programa Huenit la profundidad de dibujo es
   configurable. **Reiniciar escena** borra también el dibujo.
+- **Láser** (selector «Láser (grabado)»): `robot.laserOn()` / `robot.laserOff()`
+  encienden y apagan el haz (comandos `M3` / `M5`); al pasar por la altura
+  focal deja la marca de grabado en la mesa. El ejemplo «Láser: grabar un
+  cuadrado» lo muestra. **El láser real quema: solo con el robot conectado y
+  supervisado**, con el mismo cuidado que el modo láser del programa Huenit.
+  Su Z de mesa (≈ −45) es aproximada: mide la de tu robot.
 
 ## Pasar al robot real
 
