@@ -9,7 +9,7 @@ simulador sin el robot y después lo ejecutan igual en el brazo real.
 | Archivo | Para qué sirve |
 |---|---|
 | `index.html` | El simulador completo. Ábrelo con doble clic en Chrome o Edge. |
-| `ejemplos/` | Los cinco ejemplos del simulador como archivos `.py`. |
+| `ejemplos/` | Los seis ejemplos del simulador como archivos `.py`. |
 | `referencia/robot.py` | La librería oficial que trae el programa Huenit (sacada de `resources/robot_blocks`). Solo como referencia: muestra qué comandos envía cada función. |
 
 ## Usarlo
@@ -17,7 +17,7 @@ simulador sin el robot y después lo ejecutan igual en el brazo real.
 1. Abre `index.html` en Chrome o Edge. Necesita internet la primera vez, porque
    carga el intérprete de Python (Skulpt), el motor 3D (Three.js) y el editor
    (CodeMirror) desde CDN.
-2. Escribe el código, elige la herramienta (ventosa o pinza) y pulsa **Ejecutar**
+2. Escribe el código, elige la herramienta (ventosa, pinza o pluma) y pulsa **Ejecutar**
    (o Ctrl+Enter).
 3. El código se guarda solo en el navegador de cada alumno.
 
@@ -47,6 +47,12 @@ Además de ejecutar programas de Python, la página permite manejar el brazo a m
   conectado a la vez (se puede parar con Detener o la parada de emergencia), y
   **Copiar G-code** exporta la macro como comandos listos para la consola del
   programa Huenit. La macro se guarda sola en el navegador.
+- **Pluma** (selector de herramienta «Portabolígrafos»): cuando la punta toca
+  la mesa el brazo dibuja en ella, con cualquier movimiento (programa,
+  «Mover», consola o macro). El ejemplo «Pluma: dibujar un cuadrado» traza un
+  cuadrado de 100 mm con `moveG1`. Su Z de mesa (≈ −50) es aproximada: mide
+  la de tu robot, porque en el programa Huenit la profundidad de dibujo es
+  configurable. **Reiniciar escena** borra también el dibujo.
 
 ## Pasar al robot real
 

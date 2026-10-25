@@ -240,6 +240,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
           <select id="toolSel">
             <option value="suction">Ventosa (succión)</option>
             <option value="gripper">Pinza blanda</option>
+            <option value="pen">Portabolígrafos (dibujo)</option>
           </select>
         </div>
         <p class="notice" id="exampleNotice" hidden><span id="exampleNoticeText"></span><button class="linkbtn" id="restoreBtn" type="button">Recuperar mi código</button></p>
@@ -351,6 +352,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
             <tr><td>robot.suctionOff()</td><td>Apaga la ventosa y suelta el objeto.</td></tr>
             <tr><td>robot.gripper(modo)</td><td>Pinza: 0 = reposo, 1 = abrir, 2 = agarrar (tarda unos 3 s).</td></tr>
             <tr><td>robot.suctionAngle(grados, velocidad)</td><td>Gira la ventosa (módulo giratorio). De 0 a 269 grados.</td></tr>
+            <tr><td>Portabolígrafos</td><td>Elige la herramienta «Pluma»: cuando la punta toca la mesa, el brazo dibuja. Con <code>moveG1</code> traza líneas rectas; al subir la Z levanta la pluma.</td></tr>
             <tr class="group"><td colspan="2">Otras</td></tr>
             <tr><td>time.sleep(segundos)</td><td>Espera. Necesita <code>import time</code>.</td></tr>
             <tr><td>robot.getDeg()</td><td>Ángulos de los motores. En la simulación es aproximado.</td></tr>
@@ -359,7 +361,7 @@ code { font-family: var(--font-mono); font-size: 0.86em; background: var(--sunk)
             <tr><td>robot.sendCommand("G0 X0 Y200 Z50\n")</td><td>Envía un comando G-code a mano. La simulación entiende G0 y G1.</td></tr>
             <tr class="group"><td colspan="2">Coordenadas</td></tr>
             <tr><td>Origen</td><td>Centro de la base. Mirando el brazo desde atrás: X hacia los lados, Y hacia adelante, Z hacia arriba. Todo en milímetros.</td></tr>
-            <tr><td>Mesa</td><td>Con ventosa la mesa queda en Z ≈ −60 y con pinza en Z ≈ −20, según los ejemplos oficiales. Mide la de tu robot antes de la clase.</td></tr>
+            <tr><td>Mesa</td><td>Mesa aproximada: Z ≈ −60 con ventosa, Z ≈ −20 con pinza y Z ≈ −50 con pluma (este último no es oficial: mide la de tu robot antes de la clase).</td></tr>
           </table>
           </div>
         </div>
@@ -428,7 +430,8 @@ const G = { flange: 110, shoulder: 135, L1: 160, L2: 160, reachA: 60, wristUp: 2
 // Altura de la punta de cada herramienta sobre la mesa: punta = Z + T
 const TOOL = {
   suction: { name: "Ventosa", T: 60 },
-  gripper: { name: "Pinza", T: 20 }
+  gripper: { name: "Pinza", T: 20 },
+  pen: { name: "Pluma", T: 50 } // T aproximado: en el programa Huenit la profundidad de dibujo es configurable
 };
 const HOME = { x: 0, y: 180, z: 0 };
 const CUBE = 25;
@@ -574,6 +577,16 @@ function buildRobot() {
     parts.fingers.push({ pivot, s });
   });
   parts.gripper = gripper;
+  const pen = new THREE.Group(); toolG.add(pen);
+  const pLen = G.flange - TOOL.pen.T;
+  const pholder = shadow(new THREE.Mesh(new THREE.CylinderGeometry(11, 13, 26, 24), grey)); pholder.position.y = -13; pen.add(pholder);
+  const pcollar = shadow(new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 8, 20), dark)); pcollar.position.y = -30; pen.add(pcollar);
+  const pBodyLen = pLen - 34;
+  const pbody = shadow(new THREE.Mesh(new THREE.CylinderGeometry(5.5, 5.5, pBodyLen, 16), new THREE.MeshStandardMaterial({ color: 0x1971c2, roughness: 0.5 })));
+  pbody.position.y = -34 - pBodyLen / 2; pen.add(pbody);
+  const nib = new THREE.Mesh(new THREE.ConeGeometry(4.5, 8, 16), new THREE.MeshStandardMaterial({ color: 0xe9e4d0, roughness: 0.7 }));
+  nib.rotation.x = Math.PI; nib.position.y = -pLen + 4; pen.add(nib);
+  parts.pen = pen;
   parts.turret = turret;
 }
 
@@ -608,6 +621,7 @@ function pose() {
   parts.toolG.rotation.y = (S.rot * Math.PI) / 180;
   parts.suction.visible = S.tool === "suction";
   parts.gripper.visible = S.tool === "gripper";
+  if (parts.pen) parts.pen.visible = S.tool === "pen";
   const open = S.grip === 1 ? 0.32 : S.grip === 2 ? -0.05 : 0.1;
   parts.fingers.forEach((f) => { f.pivot.rotation.x = -f.s * open; });
   // cubo sujeto
@@ -672,6 +686,40 @@ function pushTrail() {
   trail.geometry = new THREE.BufferGeometry().setFromPoints(trailPts);
 }
 
+/* ===================== Trazos de la pluma (dibujo) ===================== */
+let strokesGroup = null, curStroke = null, wasTouching = false;
+const INK = 0x1971c2;
+function penTouching() { return S.tool === "pen" && tip().h <= 0.6; }
+function addStrokeMesh(pts) {
+  if (!window.THREE || !scene) return;
+  if (!strokesGroup) { strokesGroup = new THREE.Group(); scene.add(strokesGroup); }
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: INK }));
+  line.userData.pts = pts;
+  strokesGroup.add(line);
+}
+function updateStrokeMesh(pts) {
+  if (!strokesGroup) return;
+  const line = strokesGroup.children.find((l) => l.userData.pts === pts);
+  if (line) { line.geometry.dispose(); line.geometry = new THREE.BufferGeometry().setFromPoints(pts); }
+}
+function penTrack() {
+  if (!penTouching()) {
+    curStroke = null;
+    if (S.tool === "pen" && wasTouching) { wasTouching = false; updateTags(); }
+    return;
+  }
+  if (!wasTouching) { wasTouching = true; updateTags(); }
+  const p = w2t(S.pos.x, S.pos.y, 0.6); // 0.6 mm sobre la mesa, para que no parpadee
+  if (!curStroke) { curStroke = [p]; addStrokeMesh(curStroke); return; }
+  if (curStroke[curStroke.length - 1].distanceTo(p) > 0.8) { curStroke.push(p); updateStrokeMesh(curStroke); }
+}
+function clearStrokes() {
+  curStroke = null; wasTouching = false;
+  if (!strokesGroup) return;
+  strokesGroup.children.forEach((l) => l.geometry.dispose());
+  scene.remove(strokesGroup); strokesGroup = null;
+}
+
 /* ===================== Cubos y física simple ===================== */
 function resetScene() {
   S.cubes.forEach((c) => scene && scene.remove(c.mesh));
@@ -682,6 +730,7 @@ function resetScene() {
   });
   S.pos = { ...HOME }; S.theta = 0; S.pump = 0; S.valve = 0; S.grip = 0; S.held = null; S.free = false; S.rot = 0;
   trailPts = []; if (trail) { trail.geometry.dispose(); trail.geometry = new THREE.BufferGeometry(); }
+  clearStrokes();
   pose(); drawReach(); updateTags(); renderScene();
 }
 function suctionActive() { return S.tool === "suction" && S.pump > 0 && !S.valve; }
@@ -692,7 +741,7 @@ function tryAttach() {
     const top = c.h + CUBE, dx = Math.abs(t.x - c.x), dy = Math.abs(t.y - c.y);
     let ok = false;
     if (S.tool === "suction") ok = dx <= 10 && dy <= 10 && Math.abs(t.h - top) <= 4;
-    else ok = dx <= 9 && dy <= 9 && t.h >= c.h + 3 && t.h <= top - 1;
+    else if (S.tool === "gripper") ok = dx <= 9 && dy <= 9 && t.h >= c.h + 3 && t.h <= top - 1;
     if (ok && !isCovered(c)) { S.held = c; S.holdOff = { x: c.x - t.x, y: c.y - t.y, h: c.h - t.h }; info("  ↳ " + c.label + " agarrado"); updateTags(); return; }
   }
 }
@@ -717,11 +766,20 @@ function release() {
 }
 function collision() {
   const t = tip();
-  if (t.h < -0.5) return "La herramienta choca con la mesa (Z = " + S.pos.z.toFixed(1) + "). Con " + TOOL[S.tool].name.toLowerCase() + " la mesa está en Z = " + (-TOOL[S.tool].T) + ".";
+  if (t.h < -0.5) {
+    // Con la pluma, apoyarla un poco es dibujar; hundirla de más es error
+    if (S.tool !== "pen" || t.h < -2)
+      return S.tool === "pen"
+        ? "Has hundido la pluma en la mesa (Z = " + S.pos.z.toFixed(1) + "). Con la pluma la mesa está en Z = " + (-TOOL[S.tool].T) + "."
+        : "La herramienta choca con la mesa (Z = " + S.pos.z.toFixed(1) + "). Con " + TOOL[S.tool].name.toLowerCase() + " la mesa está en Z = " + (-TOOL[S.tool].T) + ".";
+  }
   for (const c of S.cubes) {
     if (c === S.held) continue;
     const inside = Math.abs(t.x - c.x) < CUBE / 2 && Math.abs(t.y - c.y) < CUBE / 2 && t.h < c.h + CUBE - 1.5 && t.h > c.h - 40;
-    if (inside && (S.tool === "suction" || S.grip !== 1)) return "La " + TOOL[S.tool].name.toLowerCase() + " choca con el " + c.label.toLowerCase() + ". Para tocarlo por arriba usa Z = " + (c.h + CUBE - TOOL[S.tool].T) + (S.tool === "gripper" ? " o abre la pinza con robot.gripper(1)." : ".");
+    if (inside && (S.tool === "suction" || S.grip !== 1))
+      return S.tool === "pen"
+        ? "La pluma choca con el " + c.label.toLowerCase() + ". Dibuja en la mesa o sube la Z por encima de " + (c.h + CUBE - TOOL[S.tool].T) + " para pasar por encima."
+        : "La " + TOOL[S.tool].name.toLowerCase() + " choca con el " + c.label.toLowerCase() + ". Para tocarlo por arriba usa Z = " + (c.h + CUBE - TOOL[S.tool].T) + (S.tool === "gripper" ? " o abre la pinza con robot.gripper(1)." : ".");
   }
   if (S.held) {
     const c = S.held;
@@ -768,7 +826,8 @@ function moveTo(target, mode, mul) {
         pushTrail();
         const hit = collision();
         if (hit) { anim = null; drawReach(); renderScene(); rej(new Error(hit)); return; }
-        if (k >= 1) { S.pos = { ...b }; pose(); anim = null; drawReach(); renderScene(); res(); }
+        penTrack();
+        if (k >= 1) { S.pos = { ...b }; pose(); penTrack(); anim = null; drawReach(); renderScene(); res(); }
       },
       cancel() { anim = null; rej(STOP); }
     };
@@ -1390,6 +1449,25 @@ for z in [0, 50, 100, 150]:
 
 # Prueba: ¿qué pasa si pedimos un punto imposible?
 robot.moveG0(0, 180, 150)
+` },
+  { id: "dibujar", name: "Pluma: dibujar un cuadrado", tool: "pen", code:
+`import robot
+
+# Dibuja un cuadrado de 100 mm con el portabolígrafos
+MESA = -50    # Z de la mesa con la pluma (valor aproximado: mide el de tu robot)
+ALTO = -30    # Z para desplazarse sin dibujar
+
+robot.moveG0(-110, 240, ALTO)   # encima de la primera esquina
+robot.moveG0(-110, 240, MESA)   # bajar la pluma: empieza el trazo
+
+robot.moveG1(-10, 240, MESA)    # lado 1 (G1 = línea recta)
+robot.moveG1(-10, 340, MESA)    # lado 2
+robot.moveG1(-110, 340, MESA)   # lado 3
+robot.moveG1(-110, 240, MESA)   # lado 4: cierra el cuadrado
+
+robot.moveG0(-110, 240, ALTO)   # levantar la pluma
+robot.goHome()
+print("¡Cuadrado dibujado!")
 ` }
 ];
 const DEFAULT = EXAMPLES[1];
@@ -1549,8 +1627,11 @@ function clearMarks() { clearRun(); clearErr(); }
 
 function updateTags() {
   const tt = document.getElementById("tagTool");
-  const active = S.tool === "suction" ? suctionActive() : S.grip === 2;
-  tt.textContent = TOOL[S.tool].name + (S.tool === "suction" ? (active ? " · encendida" : " · apagada") : [" · reposo", " · abierta", " · cerrada"][S.grip]);
+  let active, label;
+  if (S.tool === "pen") { active = penTouching(); label = "Pluma" + (active ? " · dibujando" : " · arriba"); }
+  else if (S.tool === "suction") { active = suctionActive(); label = "Ventosa" + (active ? " · encendida" : " · apagada"); }
+  else { active = S.grip === 2; label = "Pinza" + [" · reposo", " · abierta", " · cerrada"][S.grip]; }
+  tt.textContent = label;
   tt.classList.toggle("on", active);
   const th = document.getElementById("tagHold");
   th.hidden = !S.held; if (S.held) { th.textContent = "Sujetando " + S.held.label.toLowerCase(); th.classList.add("on"); }
